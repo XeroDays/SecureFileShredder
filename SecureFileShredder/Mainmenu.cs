@@ -88,7 +88,7 @@ namespace SecureFileShredder
 
                 MessageBox.Show("Files have been shredded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-
+            trackBar1.Enabled = true;
             btnStartDeleting.Visible = true;
             progressBar.Visible = false;
             listBoxFiles.Items.Clear();
@@ -124,6 +124,7 @@ namespace SecureFileShredder
                 MessageBox.Show("Please add files to shred.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             } 
+            trackBar1.Enabled = false;
             btnStartDeleting.Visible = false;
             progressBar.Visible = true;
             progressBar.Maximum = listofPaths.Count * PASSES; // Each file has 3 passes
