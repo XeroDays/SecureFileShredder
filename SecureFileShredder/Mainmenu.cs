@@ -42,8 +42,7 @@ namespace SecureFileShredder
                     e.Cancel = true;
                     break;
                 }
-                ShredFile(file, backgroundWorker, ref progress);
-                //remove file path from the listbox
+                ShredFile(file, backgroundWorker, ref progress); 
                 listBoxFiles.Invoke(new Action(() => listBoxFiles.Items.Remove(file))); 
             }
         }
@@ -96,8 +95,7 @@ namespace SecureFileShredder
         }
 
         private void btnStartDeleting_Click(object sender, EventArgs e)
-        {
-            //show message are you sure you want to delete 
+        { 
             DialogResult dialogResult = MessageBox.Show("Are you sure you want to delete these files?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (dialogResult == DialogResult.No)
             {
@@ -113,7 +111,7 @@ namespace SecureFileShredder
             trackBar1.Enabled = false;
             btnStartDeleting.Visible = false;
             progressBar.Visible = true;
-            progressBar.Maximum = listofPaths.Count * PASSES; // Each file has 3 passes
+            progressBar.Maximum = listofPaths.Count * PASSES;  
             progressBar.Value = 0;
             backgroundWorker.RunWorkerAsync(listofPaths);
         }
@@ -132,9 +130,8 @@ namespace SecureFileShredder
         {
             using (var rng = new RNGCryptoServiceProvider())
             {
-                byte[] data = new byte[4096]; // Use a larger buffer
-                long fileLength = new FileInfo(filePath).Length;
-                 
+                byte[] data = new byte[4096];  
+                long fileLength = new FileInfo(filePath).Length; 
 
                 for (int i = 0; i < passes; i++)
                 {
