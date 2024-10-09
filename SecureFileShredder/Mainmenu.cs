@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+﻿using System.ComponentModel; 
+using System.Security.Cryptography; 
 
 namespace SecureFileShredder
 {
@@ -65,9 +55,7 @@ namespace SecureFileShredder
         }
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            
-             
+        { 
             if (e.Cancelled)
             {
                 MessageBox.Show("File shredding operation was cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -84,8 +72,7 @@ namespace SecureFileShredder
                 {
                     File.Delete(file);
                     progressBar.Value++;
-                } 
-
+                }  
                 MessageBox.Show("Files have been shredded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             trackBar1.Enabled = true;
