@@ -14,8 +14,7 @@ namespace SecureFileShredder
         {
             InitializeComponent();
             InitializeBackgroundWorker();
-            progressBar.Visible = false;
-
+            progressBar.Visible = false; 
         }
 
         private void InitializeBackgroundWorker()
