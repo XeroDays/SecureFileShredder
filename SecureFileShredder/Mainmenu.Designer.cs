@@ -36,11 +36,11 @@
             label2 = new Label();
             progressBar = new ProgressBar();
             backgroundWorker = new System.ComponentModel.BackgroundWorker();
-            numberPasses = new NumericUpDown();
-            label3 = new Label();
+            lblPasses = new Label();
+            trackBar1 = new TrackBar();
             ((System.ComponentModel.ISupportInitialize)btnClose).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numberPasses).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBar1).BeginInit();
             SuspendLayout();
             // 
             // label1
@@ -48,7 +48,7 @@
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI Semibold", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.Maroon;
-            label1.Location = new Point(9, 9);
+            label1.Location = new Point(6, 6);
             label1.Name = "label1";
             label1.Size = new Size(189, 30);
             label1.TabIndex = 0;
@@ -59,7 +59,7 @@
             // 
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClose.Image = Properties.Resources.icons8_close_48;
-            btnClose.Location = new Point(396, 12);
+            btnClose.Location = new Point(402, 7);
             btnClose.Name = "btnClose";
             btnClose.Size = new Size(30, 29);
             btnClose.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -77,9 +77,9 @@
             listBoxFiles.AllowDrop = true;
             listBoxFiles.FormattingEnabled = true;
             listBoxFiles.ItemHeight = 15;
-            listBoxFiles.Location = new Point(12, 58);
+            listBoxFiles.Location = new Point(12, 41);
             listBoxFiles.Name = "listBoxFiles";
-            listBoxFiles.Size = new Size(414, 169);
+            listBoxFiles.Size = new Size(414, 214);
             listBoxFiles.TabIndex = 2;
             listBoxFiles.DragDrop += listBox1_DragDrop;
             listBoxFiles.DragEnter += Form1_DragEnter;
@@ -87,7 +87,7 @@
             // 
             // btnStartDeleting
             // 
-            btnStartDeleting.Location = new Point(264, 229);
+            btnStartDeleting.Location = new Point(264, 308);
             btnStartDeleting.Name = "btnStartDeleting";
             btnStartDeleting.Size = new Size(162, 27);
             btnStartDeleting.TabIndex = 3;
@@ -99,7 +99,7 @@
             // 
             label2.AutoSize = true;
             label2.ForeColor = Color.Green;
-            label2.Location = new Point(12, 229);
+            label2.Location = new Point(12, 305);
             label2.Name = "label2";
             label2.Size = new Size(200, 15);
             label2.TabIndex = 4;
@@ -107,29 +107,32 @@
             // 
             // progressBar
             // 
-            progressBar.Location = new Point(12, 247);
+            progressBar.Location = new Point(12, 326);
             progressBar.Name = "progressBar";
             progressBar.Size = new Size(414, 10);
             progressBar.TabIndex = 5;
             // 
-            // numberPasses
+            // lblPasses
             // 
-            numberPasses.Location = new Point(348, 12);
-            numberPasses.Name = "numberPasses";
-            numberPasses.Size = new Size(42, 23);
-            numberPasses.TabIndex = 6;
-            numberPasses.Value = new decimal(new int[] { 3, 0, 0, 0 });
+            lblPasses.AutoSize = true;
+            lblPasses.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblPasses.ForeColor = Color.Red;
+            lblPasses.Location = new Point(14, 259);
+            lblPasses.Name = "lblPasses";
+            lblPasses.Size = new Size(72, 15);
+            lblPasses.TabIndex = 7;
+            lblPasses.Text = "PASSES  -  3";
             // 
-            // label3
+            // trackBar1
             // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.ForeColor = Color.Red;
-            label3.Location = new Point(296, 15);
-            label3.Name = "label3";
-            label3.Size = new Size(48, 15);
-            label3.TabIndex = 7;
-            label3.Text = "PASSES";
+            trackBar1.Location = new Point(12, 274);
+            trackBar1.Maximum = 30;
+            trackBar1.Minimum = 1;
+            trackBar1.Name = "trackBar1";
+            trackBar1.Size = new Size(414, 45);
+            trackBar1.TabIndex = 8;
+            trackBar1.Value = 3;
+            trackBar1.Scroll += trackBar1_Scroll;
             // 
             // Mainmenu
             // 
@@ -137,12 +140,12 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(224, 224, 224);
-            ClientSize = new Size(438, 268);
-            Controls.Add(label3);
-            Controls.Add(numberPasses);
+            ClientSize = new Size(438, 347);
+            Controls.Add(lblPasses);
             Controls.Add(btnStartDeleting);
             Controls.Add(progressBar);
             Controls.Add(label2);
+            Controls.Add(trackBar1);
             Controls.Add(listBoxFiles);
             Controls.Add(btnClose);
             Controls.Add(label1);
@@ -155,7 +158,7 @@
             MouseDown += Form1_MouseDown;
             ((System.ComponentModel.ISupportInitialize)btnClose).EndInit();
             ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numberPasses).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBar1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -170,7 +173,7 @@
         private ListBox listBoxFiles;
         private ProgressBar progressBar;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
-        private Label label3;
-        private NumericUpDown numberPasses;
+        private Label lblPasses;
+        private TrackBar trackBar1;
     }
 }

@@ -66,11 +66,8 @@ namespace SecureFileShredder
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-
-            btnStartDeleting.Visible = true;
-            progressBar.Visible = false;
-            listofPaths.Clear();
-            listBoxFiles.Items.Clear();
+            
+             
             if (e.Cancelled)
             {
                 MessageBox.Show("File shredding operation was cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -80,9 +77,23 @@ namespace SecureFileShredder
                 MessageBox.Show("An error occurred during file shredding: " + e.Error.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
-            {
+            { 
+                progressBar.Value = 0;
+                progressBar.Maximum = listofPaths.Count;
+                foreach (string file in listofPaths)
+                {
+                    File.Delete(file);
+                    progressBar.Value++;
+                } 
+
                 MessageBox.Show("Files have been shredded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+
+            btnStartDeleting.Visible = true;
+            progressBar.Visible = false;
+            listBoxFiles.Items.Clear();
+            listofPaths.Clear();
+
         }
 
         private void cancelRunner()
@@ -92,7 +103,11 @@ namespace SecureFileShredder
                 backgroundWorker.CancelAsync();
             }
         }
-
+         
+        private void trackBar1_Scroll(object sender, System.EventArgs e)
+        { 
+            lblPasses.Text = "PASSES  -  " + trackBar1.Value;
+        }
 
         private void btnStartDeleting_Click(object sender, EventArgs e)
         {
@@ -102,9 +117,8 @@ namespace SecureFileShredder
             {
                 return;
             }
-
-
-            PASSES = Convert.ToInt32(numberPasses.Value);
+              
+            PASSES = Convert.ToInt32(trackBar1.Value);
             if (listofPaths.Count == 0)
             {
                 MessageBox.Show("Please add files to shred.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
