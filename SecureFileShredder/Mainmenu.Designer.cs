@@ -148,6 +148,7 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.None;
             Name = "Mainmenu";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Mainmenu";
             DragDrop += listBox1_DragDrop;
             DragEnter += Form1_DragEnter;

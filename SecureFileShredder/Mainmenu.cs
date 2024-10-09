@@ -54,6 +54,8 @@ namespace SecureFileShredder
                     break;
                 }
                 ShredFile(file, backgroundWorker, ref progress);
+                //remove file path from the listbox
+                listBoxFiles.Invoke(new Action(() => listBoxFiles.Items.Remove(file))); 
             }
         }
 
@@ -94,13 +96,20 @@ namespace SecureFileShredder
 
         private void btnStartDeleting_Click(object sender, EventArgs e)
         {
+            //show message are you sure you want to delete 
+            DialogResult dialogResult = MessageBox.Show("Are you sure you want to delete these files?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (dialogResult == DialogResult.No)
+            {
+                return;
+            }
+
+
             PASSES = Convert.ToInt32(numberPasses.Value);
             if (listofPaths.Count == 0)
             {
                 MessageBox.Show("Please add files to shred.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
-            }
-
+            } 
             btnStartDeleting.Visible = false;
             progressBar.Visible = true;
             progressBar.Maximum = listofPaths.Count * PASSES; // Each file has 3 passes
@@ -124,8 +133,7 @@ namespace SecureFileShredder
             {
                 byte[] data = new byte[4096]; // Use a larger buffer
                 long fileLength = new FileInfo(filePath).Length;
-
-
+                 
 
                 for (int i = 0; i < passes; i++)
                 {
@@ -159,23 +167,30 @@ namespace SecureFileShredder
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             foreach (string file in files)
             {
-                listofPaths.Add(file);
+                if (File.Exists(file))
+                {
+                    listofPaths.Add(file);
+                    listBoxFiles.Items.Add(file);
+                }
+                else if (Directory.Exists(file))
+                {
+                    string[] filesInDirectory = Directory.GetFiles(file, "*.*", SearchOption.AllDirectories);
+                    foreach (string fileInDirectory in filesInDirectory)
+                    {
+                        listofPaths.Add(fileInDirectory);
+                        listBoxFiles.Items.Add(fileInDirectory);
+                    }
+                }
             }
-            listofPaths = listofPaths.Distinct().ToList();
-            listBoxFiles.Items.Clear();
-            foreach (string file in listofPaths)
-            {
-                listBoxFiles.Items.Add(file);
-            }
+            listofPaths = listofPaths.Distinct().ToList(); 
+
         }
 
         private void Form1_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Copy;
         }
-
-
-
+         
 
         public const int WM_NCLBUTTONDOWN = 0xA1;
         public const int HT_CAPTION = 0x2;
