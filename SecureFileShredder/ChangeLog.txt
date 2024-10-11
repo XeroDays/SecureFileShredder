@@ -8,3 +8,4 @@ Version 1.1
  - Change Log added for release notes
  - Installer has now registry for context menu
  - Content menu option added for direct file deletion
+ - Folder Deleted now which is dragged

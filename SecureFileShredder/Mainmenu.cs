@@ -10,6 +10,7 @@ namespace SecureFileShredder
         static int PASSES;
 
         List<string> listofPaths = new List<string>();
+        List<string> listOfDirectories = new List<string>();
 
       
         public Mainmenu(string[]? args=null)
@@ -26,7 +27,16 @@ namespace SecureFileShredder
 
 
         private void updateListWithFiles(string[] files)
-        {
+        {  
+            foreach (string file in files)
+            {
+                if (Directory.Exists(file))
+                {
+                    listBoxFiles.Items.Add(file);
+                    listOfDirectories.Add(file);
+                }
+            }
+
             foreach (string file in files)
             {
                 if (File.Exists(file))
@@ -44,10 +54,11 @@ namespace SecureFileShredder
                     }
                 }
             }
+           
+
             listofPaths = listofPaths.Distinct().ToList();
         }
-
-
+         
         private void InitializeBackgroundWorker()
         {
             backgroundWorker = new BackgroundWorker
@@ -102,6 +113,12 @@ namespace SecureFileShredder
                     File.Delete(file);
                     progressBar.Value++;
                 }  
+                  
+                foreach (string directory in listOfDirectories)
+                {
+                    Directory.Delete(directory, true);
+                }
+
                 MessageBox.Show("Files have been shredded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             trackBar1.Enabled = true;
@@ -201,8 +218,7 @@ namespace SecureFileShredder
         {
             e.Effect = DragDropEffects.Copy;
         }
-         
-
+          
         public const int WM_NCLBUTTONDOWN = 0xA1;
         public const int HT_CAPTION = 0x2;
 
