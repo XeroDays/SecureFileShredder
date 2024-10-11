@@ -51,19 +51,19 @@
             label1.ForeColor = Color.Maroon;
             label1.Location = new Point(7, 8);
             label1.Name = "label1";
-            label1.Size = new Size(243, 37);
+            label1.Size = new Size(266, 37);
             label1.TabIndex = 0;
-            label1.Text = "Secure File Deleter";
+            label1.Text = "Secure File Shredder";
             label1.MouseDown += Form1_MouseDown;
             // 
             // btnClose
             // 
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClose.Image = Properties.Resources.icons8_close_48;
-            btnClose.Location = new Point(459, 9);
+            btnClose.Location = new Point(453, 9);
             btnClose.Margin = new Padding(3, 4, 3, 4);
             btnClose.Name = "btnClose";
-            btnClose.Size = new Size(34, 39);
+            btnClose.Size = new Size(38, 39);
             btnClose.SizeMode = PictureBoxSizeMode.StretchImage;
             btnClose.TabIndex = 1;
             btnClose.TabStop = false;

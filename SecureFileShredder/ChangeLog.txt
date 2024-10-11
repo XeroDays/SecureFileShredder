@@ -1,7 +1,7 @@
 ﻿Version 1.0 (Released)
  - Initital Start
 
-Version 1.1
+Version 1.1 (Released)
  - Logo added
  - Github Workflow added
  - Installer added
@@ -9,3 +9,7 @@ Version 1.1
  - Installer has now registry for context menu
  - Content menu option added for direct file deletion
  - Folder Deleted now which is dragged
+
+Version 1.2
+ - File name changed
+ - Icon design changed
