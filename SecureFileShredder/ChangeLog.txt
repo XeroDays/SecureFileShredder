@@ -1,0 +1,8 @@
+﻿Version 1.0 (Released)
+ - Initital Start
+
+Version 1.1
+ - Logo added
+ - Github Workflow added
+ - Installer added
+ - Change Log added for release notes
