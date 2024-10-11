@@ -13,3 +13,8 @@ Version 1.1 (Released)
 Version 1.2
  - File name changed
  - Icon design changed
+ - Shredder controller added
+ - Design changed
+ - Dynamic buffer bytes added
+ - Bug fixed for folder deletion
+ - Extra Algorithems passes added over combo box
