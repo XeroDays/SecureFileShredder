@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Mainmenu));
             label1 = new Label();
             btnClose = new PictureBox();
             fileSystemWatcher1 = new FileSystemWatcher();
@@ -48,9 +49,9 @@
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI Semibold", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.Maroon;
-            label1.Location = new Point(6, 6);
+            label1.Location = new Point(7, 8);
             label1.Name = "label1";
-            label1.Size = new Size(189, 30);
+            label1.Size = new Size(243, 37);
             label1.TabIndex = 0;
             label1.Text = "Secure File Deleter";
             label1.MouseDown += Form1_MouseDown;
@@ -59,9 +60,10 @@
             // 
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClose.Image = Properties.Resources.icons8_close_48;
-            btnClose.Location = new Point(402, 7);
+            btnClose.Location = new Point(459, 9);
+            btnClose.Margin = new Padding(3, 4, 3, 4);
             btnClose.Name = "btnClose";
-            btnClose.Size = new Size(30, 29);
+            btnClose.Size = new Size(34, 39);
             btnClose.SizeMode = PictureBoxSizeMode.StretchImage;
             btnClose.TabIndex = 1;
             btnClose.TabStop = false;
@@ -76,10 +78,10 @@
             // 
             listBoxFiles.AllowDrop = true;
             listBoxFiles.FormattingEnabled = true;
-            listBoxFiles.ItemHeight = 15;
-            listBoxFiles.Location = new Point(12, 41);
+            listBoxFiles.Location = new Point(14, 55);
+            listBoxFiles.Margin = new Padding(3, 4, 3, 4);
             listBoxFiles.Name = "listBoxFiles";
-            listBoxFiles.Size = new Size(414, 214);
+            listBoxFiles.Size = new Size(473, 284);
             listBoxFiles.TabIndex = 2;
             listBoxFiles.DragDrop += listBox1_DragDrop;
             listBoxFiles.DragEnter += Form1_DragEnter;
@@ -87,9 +89,10 @@
             // 
             // btnStartDeleting
             // 
-            btnStartDeleting.Location = new Point(264, 308);
+            btnStartDeleting.Location = new Point(302, 411);
+            btnStartDeleting.Margin = new Padding(3, 4, 3, 4);
             btnStartDeleting.Name = "btnStartDeleting";
-            btnStartDeleting.Size = new Size(162, 27);
+            btnStartDeleting.Size = new Size(185, 36);
             btnStartDeleting.TabIndex = 3;
             btnStartDeleting.Text = "Start Secure Clean-Up";
             btnStartDeleting.UseVisualStyleBackColor = true;
@@ -99,17 +102,18 @@
             // 
             label2.AutoSize = true;
             label2.ForeColor = Color.Green;
-            label2.Location = new Point(12, 305);
+            label2.Location = new Point(14, 407);
             label2.Name = "label2";
-            label2.Size = new Size(200, 15);
+            label2.Size = new Size(253, 20);
             label2.TabIndex = 4;
             label2.Text = "Please drop files and start shredding.\r\n";
             // 
             // progressBar
             // 
-            progressBar.Location = new Point(12, 326);
+            progressBar.Location = new Point(14, 435);
+            progressBar.Margin = new Padding(3, 4, 3, 4);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(414, 10);
+            progressBar.Size = new Size(473, 13);
             progressBar.TabIndex = 5;
             // 
             // lblPasses
@@ -117,19 +121,20 @@
             lblPasses.AutoSize = true;
             lblPasses.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblPasses.ForeColor = Color.Red;
-            lblPasses.Location = new Point(14, 259);
+            lblPasses.Location = new Point(16, 345);
             lblPasses.Name = "lblPasses";
-            lblPasses.Size = new Size(72, 15);
+            lblPasses.Size = new Size(91, 20);
             lblPasses.TabIndex = 7;
             lblPasses.Text = "PASSES  -  3";
             // 
             // trackBar1
             // 
-            trackBar1.Location = new Point(12, 274);
+            trackBar1.Location = new Point(14, 365);
+            trackBar1.Margin = new Padding(3, 4, 3, 4);
             trackBar1.Maximum = 30;
             trackBar1.Minimum = 1;
             trackBar1.Name = "trackBar1";
-            trackBar1.Size = new Size(414, 45);
+            trackBar1.Size = new Size(473, 56);
             trackBar1.TabIndex = 8;
             trackBar1.Value = 3;
             trackBar1.Scroll += trackBar1_Scroll;
@@ -137,10 +142,10 @@
             // Mainmenu
             // 
             AllowDrop = true;
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(224, 224, 224);
-            ClientSize = new Size(438, 347);
+            ClientSize = new Size(501, 463);
             Controls.Add(lblPasses);
             Controls.Add(btnStartDeleting);
             Controls.Add(progressBar);
@@ -150,6 +155,8 @@
             Controls.Add(btnClose);
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.None;
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            Margin = new Padding(3, 4, 3, 4);
             Name = "Mainmenu";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Mainmenu";
