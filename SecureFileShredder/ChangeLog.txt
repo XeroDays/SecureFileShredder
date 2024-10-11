@@ -6,3 +6,5 @@ Version 1.1
  - Github Workflow added
  - Installer added
  - Change Log added for release notes
+ - Installer has now registry for context menu
+ - Content menu option added for direct file deletion

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel; 
+﻿using Microsoft.Win32;
+using System.ComponentModel; 
 using System.Security.Cryptography; 
 
 namespace SecureFileShredder
@@ -10,12 +11,42 @@ namespace SecureFileShredder
 
         List<string> listofPaths = new List<string>();
 
-        public Mainmenu()
-        {
+      
+        public Mainmenu(string[]? args=null)
+        { 
             InitializeComponent();
             InitializeBackgroundWorker();
             progressBar.Visible = false; 
+
+            if (args != null && args.Length > 0)
+            {
+                updateListWithFiles (args);
+            }
         }
+
+
+        private void updateListWithFiles(string[] files)
+        {
+            foreach (string file in files)
+            {
+                if (File.Exists(file))
+                {
+                    listofPaths.Add(file);
+                    listBoxFiles.Items.Add(file);
+                }
+                else if (Directory.Exists(file))
+                {
+                    string[] filesInDirectory = Directory.GetFiles(file, "*.*", SearchOption.AllDirectories);
+                    foreach (string fileInDirectory in filesInDirectory)
+                    {
+                        listofPaths.Add(fileInDirectory);
+                        listBoxFiles.Items.Add(fileInDirectory);
+                    }
+                }
+            }
+            listofPaths = listofPaths.Distinct().ToList();
+        }
+
 
         private void InitializeBackgroundWorker()
         {
@@ -162,26 +193,8 @@ namespace SecureFileShredder
         //generate method to drag files into the listbox and list hte file paths in the listbox 
         private void listBox1_DragDrop(object sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string file in files)
-            {
-                if (File.Exists(file))
-                {
-                    listofPaths.Add(file);
-                    listBoxFiles.Items.Add(file);
-                }
-                else if (Directory.Exists(file))
-                {
-                    string[] filesInDirectory = Directory.GetFiles(file, "*.*", SearchOption.AllDirectories);
-                    foreach (string fileInDirectory in filesInDirectory)
-                    {
-                        listofPaths.Add(fileInDirectory);
-                        listBoxFiles.Items.Add(fileInDirectory);
-                    }
-                }
-            }
-            listofPaths = listofPaths.Distinct().ToList(); 
-
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop); 
+            updateListWithFiles(files); 
         }
 
         private void Form1_DragEnter(object sender, DragEventArgs e)

@@ -11,34 +11,22 @@
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 
 [Setup]
-; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
-; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{BA7DC219-9B3E-4628-83FD-D9ACDF4FAD7A}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
-;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
-; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
-; on anything but x64 and Windows 11 on Arm.
 ArchitecturesAllowed=x64compatible
-; "ArchitecturesInstallIn64BitMode=x64compatible" requests that the
-; install be done in "64-bit mode" on x64 or Windows 11 on Arm,
-; meaning it should use the native 64-bit Program Files directory and
-; the 64-bit view of the registry.
 ArchitecturesInstallIn64BitMode=x64compatible
 ChangesAssociations=yes
 DefaultGroupName={#MyAppName}
-; Uncomment the following line to run in non administrative install mode (install for current user only.)
-;PrivilegesRequired=lowest
 OutputBaseFilename=Secure Shredder
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -52,14 +40,25 @@ Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.pdb"; 
 Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.deps.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.dll"; DestDir: "{app}"; Flags: ignoreversion
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+Source: "SecureFileShredder\bin\Release\net8.0-windows\icons8-demolition-96.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
+; File association for .exe files (optional)
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}"; ValueType: string; ValueName: ""; ValueData: "{#MyAppAssocName}"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
 Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".myp"; ValueData: ""
+
+; Context menu for all files
+Root: HKCR; Subkey: "*\shell\SecureFileShredder"; ValueType: string; ValueName: ""; ValueData: "Shred Securely"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "*\shell\SecureFileShredder\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: "*\shell\SecureFileShredder"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\icons8-demolition-96.ico"; Flags: uninsdeletekey
+
+; Context menu for directories
+Root: HKCR; Subkey: "Directory\shell\SecureFileShredder"; ValueType: string; ValueName: ""; ValueData: "Shred Securely"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Directory\shell\SecureFileShredder\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Directory\shell\SecureFileShredder"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\icons8-demolition-96.ico"; Flags: uninsdeletekey
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -67,4 +66,3 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-
