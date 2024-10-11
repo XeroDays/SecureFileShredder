@@ -119,7 +119,7 @@ This software is provided for educational purposes only. It is intended to be us
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
 
 ## Contributions
 
