@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
-using System.ComponentModel; 
-using System.Security.Cryptography; 
+using System.ComponentModel;
+using System.Security.Cryptography;
 
 namespace SecureFileShredder
 {
@@ -8,26 +8,55 @@ namespace SecureFileShredder
     {
 
         static int PASSES;
+        static int Buffer_Size;
 
         List<string> listofPaths = new List<string>();
         List<string> listOfDirectories = new List<string>();
 
-      
-        public Mainmenu(string[]? args=null)
-        { 
+
+        public Mainmenu(string[]? args = null)
+        {
             InitializeComponent();
             InitializeBackgroundWorker();
-            progressBar.Visible = false; 
+            progressBar.Visible = false;
+            setupPassesCombo();
+            setupBufferSizeCombo();
+
 
             if (args != null && args.Length > 0)
             {
-                updateListWithFiles (args);
+                updateListWithFiles(args);
             }
         }
 
 
+        private void setupBufferSizeCombo()
+        {
+            cmbBufferSize.Items.Add("1024 bytes ( 1 KB )");
+            cmbBufferSize.Items.Add("2048 bytes ( 2 KB )");
+            cmbBufferSize.Items.Add("Default ( 4 KB )");
+            cmbBufferSize.Items.Add("8192 bytes ( 8 KB )");
+            cmbBufferSize.Items.Add("16384 bytes ( 16 KB )");
+            cmbBufferSize.Items.Add("32768 bytes ( 32 KB )");
+            cmbBufferSize.Items.Add("65536 bytes ( 64 KB )");
+            cmbBufferSize.Items.Add("131072 bytes ( 128 KB )");
+            cmbBufferSize.Items.Add("262144 bytes ( 256 KB )");
+            cmbBufferSize.Items.Add("524288 bytes ( 512 KB )");
+            cmbBufferSize.SelectedIndex = 2;
+        }
+
+        private void setupPassesCombo()
+        {
+            cmbPasses.Items.Add("Default ( 1 Passes )");
+            cmbPasses.Items.Add("DOD ( 3 Passes )");
+            cmbPasses.Items.Add("NSA ( 7 Passes )");
+            cmbPasses.Items.Add("GUTTMAN ( 35 Passes )");
+            cmbPasses.SelectedIndex = 1;
+        }
+
+
         private void updateListWithFiles(string[] files)
-        {  
+        {
             foreach (string file in files)
             {
                 if (Directory.Exists(file))
@@ -53,12 +82,17 @@ namespace SecureFileShredder
                         listBoxFiles.Items.Add(fileInDirectory);
                     }
                 }
-            }
-           
-
+            } 
             listofPaths = listofPaths.Distinct().ToList();
+
+            // if listofpaths is empty then clean the listbox and directories list
+            if (listofPaths.Count == 0)
+            {
+                listBoxFiles.Items.Clear();
+                listOfDirectories.Clear();
+            } 
         }
-         
+
         private void InitializeBackgroundWorker()
         {
             backgroundWorker = new BackgroundWorker
@@ -84,8 +118,8 @@ namespace SecureFileShredder
                     e.Cancel = true;
                     break;
                 }
-                ShredFile(file, backgroundWorker, ref progress); 
-                listBoxFiles.Invoke(new Action(() => listBoxFiles.Items.Remove(file))); 
+                ShredFile(file, backgroundWorker, ref progress);
+                listBoxFiles.Invoke(new Action(() => listBoxFiles.Items.Remove(file)));
             }
         }
 
@@ -95,7 +129,7 @@ namespace SecureFileShredder
         }
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        { 
+        {
             if (e.Cancelled)
             {
                 MessageBox.Show("File shredding operation was cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -105,23 +139,26 @@ namespace SecureFileShredder
                 MessageBox.Show("An error occurred during file shredding: " + e.Error.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
-            { 
+            {
                 progressBar.Value = 0;
                 progressBar.Maximum = listofPaths.Count;
                 foreach (string file in listofPaths)
                 {
                     File.Delete(file);
                     progressBar.Value++;
-                }  
-                  
+                }
+
                 foreach (string directory in listOfDirectories)
-                {
-                    Directory.Delete(directory, true);
+                { 
+                    if (Directory.Exists(directory))
+                    {
+                        Directory.Delete(directory, true);
+                    }
                 }
 
                 MessageBox.Show("Files have been shredded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            trackBar1.Enabled = true;
+
             btnStartDeleting.Visible = true;
             progressBar.Visible = false;
             listBoxFiles.Items.Clear();
@@ -136,30 +173,30 @@ namespace SecureFileShredder
                 backgroundWorker.CancelAsync();
             }
         }
-         
-        private void trackBar1_Scroll(object sender, System.EventArgs e)
-        { 
-            lblPasses.Text = "PASSES  -  " + trackBar1.Value;
-        }
 
         private void btnStartDeleting_Click(object sender, EventArgs e)
-        { 
+        {
+            string passes = cmbPasses.SelectedItem.ToString().Split("( ").Last().Split("Passes").First().Trim();
+            string selectedBufferSize = cmbBufferSize.SelectedItem.ToString().Split("( ").Last().Split("KB").First().Trim();
+
             DialogResult dialogResult = MessageBox.Show("Are you sure you want to delete these files?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (dialogResult == DialogResult.No)
             {
                 return;
             }
-              
-            PASSES = Convert.ToInt32(trackBar1.Value);
+
+            PASSES = Convert.ToInt32(passes);
+            Buffer_Size = Convert.ToInt32(selectedBufferSize) * 1024;
+
             if (listofPaths.Count == 0)
             {
-                MessageBox.Show("Please add files to shred.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("No files found here. Are they already gone?", "No files to Shredd", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
-            } 
-            trackBar1.Enabled = false;
+            }
+
             btnStartDeleting.Visible = false;
             progressBar.Visible = true;
-            progressBar.Maximum = listofPaths.Count * PASSES;  
+            progressBar.Maximum = listofPaths.Count * PASSES;
             progressBar.Value = 0;
             backgroundWorker.RunWorkerAsync(listofPaths);
         }
@@ -170,35 +207,11 @@ namespace SecureFileShredder
             {
                 return;
             }
-            OverwriteFile(filePath, PASSES, worker, ref progress);
+
+            ShredderController shredder = new ShredderController();
+            shredder.ShreddFile(filePath, PASSES, Buffer_Size, worker, ref progress);
         }
-
-
-        static void OverwriteFile(string filePath, int passes, BackgroundWorker worker, ref int progress)
-        {
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                byte[] data = new byte[4096];  
-                long fileLength = new FileInfo(filePath).Length; 
-
-                for (int i = 0; i < passes; i++)
-                {
-                    worker.ReportProgress(++progress);
-                    using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Write))
-                    {
-                        long position = 0;
-                        while (position < fileLength)
-                        {
-                            rng.GetBytes(data);
-                            fs.Write(data, 0, (int)Math.Min(data.Length, fileLength - position));
-                            position += data.Length;
-                        }
-                    }
-                }
-            }
-        }
-
-
+         
 
         #region Designer code
         private void btnClose_Click(object sender, EventArgs e)
@@ -210,15 +223,15 @@ namespace SecureFileShredder
         //generate method to drag files into the listbox and list hte file paths in the listbox 
         private void listBox1_DragDrop(object sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop); 
-            updateListWithFiles(files); 
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            updateListWithFiles(files);
         }
 
         private void Form1_DragEnter(object sender, DragEventArgs e)
         {
             e.Effect = DragDropEffects.Copy;
         }
-          
+
         public const int WM_NCLBUTTONDOWN = 0xA1;
         public const int HT_CAPTION = 0x2;
 
