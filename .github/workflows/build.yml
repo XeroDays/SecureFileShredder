@@ -7,7 +7,7 @@ on:
 env:
   PROJECT_NAME: SecureFileShredder              # Change this to your project name
   SOLUTION_FILE: ./SecureFileShredder.sln       # Change this to your solution file path
-  BUILD_PATH: ./SecureFileShredder/bin/Release # Path where the build artifacts are stored
+  BUILD_PATH: ./SecureFileShredder/bin/Release/net8.0-windows # Path where the build artifacts are stored
   ZIP_NAME: SecureFileShredder.zip              # Name of the zipped build folder
 
 jobs:
