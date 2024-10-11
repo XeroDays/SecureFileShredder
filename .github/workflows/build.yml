@@ -1,14 +1,16 @@
 name: Create Release Pipeline
 
 on:  
- release:
+  release:
     types: [published]
 
 env:
-  PROJECT_NAME: SecureFileShredder              # Change this to your project name
-  SOLUTION_FILE: ./SecureFileShredder.sln       # Change this to your solution file path
+  PROJECT_NAME: SecureFileShredder                 # Change this to your project name
+  SOLUTION_FILE: ./SecureFileShredder.sln          # Change this to your solution file path
   BUILD_PATH: ./SecureFileShredder/bin/Release/net8.0-windows # Path where the build artifacts are stored
-  ZIP_NAME: SecureFileShredder.zip              # Name of the zipped build folder
+  ZIP_NAME: SecureFileShredder.zip                 # Name of the zipped build folder
+  ISS_FILE: ./SetupInstaller.iss                   # Path to your Inno Setup script (.iss) file
+  INSTALLER_NAME: SecureFileShredderInstaller.exe  # Desired name for the installer
 
 jobs:
   build-and-release:
@@ -43,9 +45,17 @@ jobs:
         with:
           name: build
 
-      - name: 🚀📤 Upload zip to GitHub release
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --yes
+
+      - name: 🚀 Compile Installer using Inno Setup
+        run: |
+          iscc ${{ env.ISS_FILE }}
+
+      - name: 📤 Upload installer to GitHub release
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ env.BUILD_PATH }}/${{ env.ZIP_NAME }}
+          files: ${{ env.INSTALLER_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
