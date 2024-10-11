@@ -10,7 +10,7 @@ env:
   BUILD_PATH: ./SecureFileShredder/bin/Release/net8.0-windows # Path where the build artifacts are stored
   ZIP_NAME: SecureFileShredder.zip                 # Name of the zipped build folder
   ISS_FILE: ./SetupInstaller.iss                   # Path to your Inno Setup script (.iss) file
-  INSTALLER_NAME: Secure Shredder.exe  # Desired name for the installer
+  INSTALLER_NAME: ./Output/Secure Shredder.exe  # Desired name for the installer
 
 jobs:
   build-and-release:
