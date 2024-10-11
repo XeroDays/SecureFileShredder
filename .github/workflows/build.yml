@@ -1,0 +1,51 @@
+name: Create Release Pipeline
+
+on:  
+ release:
+    types: [published]
+
+env:
+  PROJECT_NAME: SecureFileShredder              # Change this to your project name
+  SOLUTION_FILE: ./SecureFileShredder.sln       # Change this to your solution file path
+  BUILD_PATH: ./SecureFileShredder/bin/Release/net8.0-windows # Path where the build artifacts are stored
+  ZIP_NAME: SecureFileShredder.zip              # Name of the zipped build folder
+
+jobs:
+  build-and-release:
+    name: Pipeline to Release
+    runs-on: windows-latest
+
+    steps:
+      - name: ⛓️ Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🛠️ Setup .NET Framework
+        uses: microsoft/setup-msbuild@v1
+
+      - name: 📦 Restore NuGet packages
+        run: nuget restore
+
+      - name: 🚀 Build the project
+        run: msbuild ${{ env.SOLUTION_FILE }} /p:Configuration=Release
+
+      - name: 🗜️ Zip the build folder
+        run: |
+          powershell Compress-Archive -Path ${{ env.BUILD_PATH }}\* -DestinationPath ${{ env.BUILD_PATH }}\${{ env.ZIP_NAME }}
+
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: ${{ env.BUILD_PATH }}/${{ env.ZIP_NAME }}
+
+      - name: ⬇️ Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+
+      - name: 🚀📤 Upload zip to GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.BUILD_PATH }}/${{ env.ZIP_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
