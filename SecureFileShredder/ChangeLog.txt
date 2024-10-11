@@ -10,7 +10,7 @@ Version 1.1 (Released)
  - Content menu option added for direct file deletion
  - Folder Deleted now which is dragged
 
-Version 1.2
+Version 1.2 (Released)
  - File name changed
  - Icon design changed
  - Shredder controller added
@@ -18,3 +18,7 @@ Version 1.2
  - Dynamic buffer bytes added
  - Bug fixed for folder deletion
  - Extra Algorithems passes added over combo box
+
+Version 1.3 (Released)
+ - Readme.md updated
+ - Added more passes 

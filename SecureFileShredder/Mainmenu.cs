@@ -47,11 +47,13 @@ namespace SecureFileShredder
 
         private void setupPassesCombo()
         {
-            cmbPasses.Items.Add("Default ( 1 Passes )");
-            cmbPasses.Items.Add("DOD ( 3 Passes )");
-            cmbPasses.Items.Add("NSA ( 7 Passes )");
+            cmbPasses.Items.Add("Normal ( 1 Passes )");
+            cmbPasses.Items.Add("DoD ( 3 Passes )");
+            cmbPasses.Items.Add("DoD 5220.M ( 7 Passes )");
+            cmbPasses.Items.Add("NSA ( 12 Passes )");
             cmbPasses.Items.Add("GUTTMAN ( 35 Passes )");
-            cmbPasses.SelectedIndex = 1;
+            cmbPasses.Items.Add("SFIK V1 ( 55 Passes )");
+            cmbPasses.SelectedIndex = 0;
         }
 
 
