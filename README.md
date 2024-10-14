@@ -63,21 +63,17 @@ The Secure File Shredder application securely deletes files using the following 
 
 Some possible future improvements include:
 
-1. **Advanced Shredding Options**: Support for additional algorithms like **Gutmann (35 passes)** or **DoD 5220.22-M (7 passes)**.
-2. **Folder Shredding**: Enable shredding of entire directories, including subfolders.
-3. **Windows Shell Integration**: Add a right-click option in Windows Explorer to shred files directly.
-4. **Secure Free Space Wiping**: Overwrite free space to ensure recovery of previously deleted files is impossible.
-5. **Shredding Locked Files**: Support shredding of files in use or locked by other processes.
-6. **Metadata Shredding**: Securely erase file metadata (e.g., file name, timestamps).
-7. **Multi-Threaded Shredding**: Speed up the process by shredding multiple files concurrently.
-8. **Password Protection**: Add password protection to prevent unauthorized access.
-9. **Encrypted File Shredding**: Add an encryption step before shredding for added security.
-10. **Shredding from External Storage**: Support shredding files from USB drives and external HDDs.
-11. **Panic Button**: A button that instantly stops the shredding operation.
-12. **Shredding Profiles**: Save and reuse specific shredding settings as profiles.
-13. **File Type Filters**: Shred only selected file types (e.g., `.pdf`, `.docx`).
-14. **Detailed Logging**: Maintain logs of shredded files, including timestamps and algorithms used.
-15. **Command-Line Interface (CLI) Support**: Provide a CLI version for advanced users and batch processing.
+1. **Shredding Locked Files**: Support shredding of files in use or locked by other processes.
+2. **Metadata Shredding**: Securely erase file metadata (e.g., file name, timestamps).
+3. **Multi-Threaded Shredding**: Speed up the process by shredding multiple files concurrently.
+4. **Password Protection**: Add password protection to prevent unauthorized access.
+5. **Encrypted File Shredding**: Add an encryption step before shredding for added security.
+6. **Shredding from External Storage**: Support shredding files from USB drives and external HDDs.
+7. **Panic Button**: A button that instantly stops the shredding operation.
+8. **Shredding Profiles**: Save and reuse specific shredding settings as profiles.
+9. **File Type Filters**: Shred only selected file types (e.g., `.pdf`, `.docx`).
+10. **Detailed Logging**: Maintain logs of shredded files, including timestamps and algorithms used.
+11. **Command-Line Interface (CLI) Support**: Provide a CLI version for advanced users and batch processing.
 
 ## Disclaimer
 
