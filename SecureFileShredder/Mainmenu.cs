@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
 namespace SecureFileShredder
@@ -13,6 +14,24 @@ namespace SecureFileShredder
         List<string> listofPaths = new List<string>();
         List<string> listOfDirectories = new List<string>();
 
+        protected override void WndProc(ref Message m)
+        {
+            const int WM_COPYDATA = 0x004A;
+            if (m.Msg == WM_COPYDATA)
+            {
+                COPYDATASTRUCT data = (COPYDATASTRUCT)m.GetLParam(typeof(COPYDATASTRUCT));
+                string filePaths = Marshal.PtrToStringAnsi(data.lpData);
+
+                if (!string.IsNullOrEmpty(filePaths))
+                {
+                    // Split and process the received file paths
+                    string[] files = filePaths.Split('|');
+                    updateListWithFiles(files);
+                }
+            }
+
+            base.WndProc(ref m);
+        }
 
         public Mainmenu(string[]? args = null)
         {
