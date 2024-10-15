@@ -7,7 +7,7 @@
 
 **Secure File Shredder** is a lightweight Windows Forms application built in C#. It provides an intuitive interface for securely deleting files from your system using cryptographic random data overwriting techniques, ensuring that sensitive information cannot be recovered.
 
-![image](https://github.com/user-attachments/assets/eba6ce89-4a9a-48ad-9cc7-39116c0e6490)
+![image](https://github.com/user-attachments/assets/c75e5a4c-cc50-4fea-a892-80e5f4d02b0b)
 
 
 The tool utilizes secure overwrite algorithms with multiple passes, making it highly resistant to data recovery techniques. It’s perfect for securely deleting files that contain personal, confidential, or financial information.
