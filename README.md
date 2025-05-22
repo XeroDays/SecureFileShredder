@@ -78,7 +78,7 @@ Some possible future improvements include:
 
 ## Disclaimer
 
-This software is provided for educational purposes only. Use it to securely delete files that you own. Deleting unauthorized files is prohibited.
+This software is provided for educational purposes only. Use it to securely delete files that you own.  
 
 ## License
 
