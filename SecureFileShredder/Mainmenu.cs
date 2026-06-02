@@ -104,7 +104,7 @@ namespace SecureFileShredder
                         listBoxFiles.Items.Add(fileInDirectory);
                     }
                 }
-            } 
+            }
             listofPaths = listofPaths.Distinct().ToList();
 
             // if listofpaths is empty then clean the listbox and directories list
@@ -112,7 +112,7 @@ namespace SecureFileShredder
             {
                 listBoxFiles.Items.Clear();
                 listOfDirectories.Clear();
-            } 
+            }
         }
 
         private void InitializeBackgroundWorker()
@@ -171,7 +171,7 @@ namespace SecureFileShredder
                 }
 
                 foreach (string directory in listOfDirectories)
-                { 
+                {
                     if (Directory.Exists(directory))
                     {
                         Directory.Delete(directory, true);
@@ -233,7 +233,7 @@ namespace SecureFileShredder
             ShredderController shredder = new ShredderController();
             shredder.ShreddFile(filePath, PASSES, Buffer_Size, worker, ref progress);
         }
-         
+
 
         #region Designer code
         private void btnClose_Click(object sender, EventArgs e)
@@ -272,7 +272,24 @@ namespace SecureFileShredder
         }
 
 
+
+        private void btnInfo_Click(object sender, EventArgs e)
+        {
+            Hide();
+            try
+            {
+                new About().ShowDialog();
+            }
+            finally
+            {
+                Show();
+                Activate();
+            }
+        }
+
+
         #endregion
 
     }
+
 }

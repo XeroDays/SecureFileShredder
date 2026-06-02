@@ -195,6 +195,7 @@
             btnInfo.SizeMode = PictureBoxSizeMode.StretchImage;
             btnInfo.TabIndex = 11;
             btnInfo.TabStop = false;
+            btnInfo.Click += btnInfo_Click;
             // 
             // Mainmenu
             // 
