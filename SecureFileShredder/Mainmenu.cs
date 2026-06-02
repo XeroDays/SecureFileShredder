@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using SecureFileShredder.Controllers;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;

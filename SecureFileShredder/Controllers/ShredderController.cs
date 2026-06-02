@@ -6,12 +6,12 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SecureFileShredder
+namespace SecureFileShredder.Controllers
 {
     public class ShredderController
     {
 
-        public void ShreddFile(string filePath, int passes,int bufferSize , BackgroundWorker worker, ref int progress)
+        public void ShreddFile(string filePath, int passes, int bufferSize, BackgroundWorker worker, ref int progress)
         {
             using (var rng = new RNGCryptoServiceProvider())
             {
