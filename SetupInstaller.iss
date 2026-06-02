@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Secure Shredder"
-#define MyAppVersion "1.2"
+#define MyAppVersion "1.5"
 #define MyAppPublisher "Softasium Software Solutions"
 #define MyAppURL "https://www.softasium.com"
 #define MyAppExeName "SecureFileShredder.exe"

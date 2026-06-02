@@ -29,7 +29,8 @@
 - **Overwrite then delete**: `BackgroundWorker` overwrites; `File.Delete` / `Directory.Delete` in `RunWorkerCompleted` on UI thread
 - **Single instance**: Mutex `"SecureShredder"` in [Program.cs](SecureFileShredder/Program.cs); second instance uses `WM_COPYDATA` IPC
 - **Borderless chrome**: `Mainmenu` and `About` use `FormBorderStyle.None`; close via `PictureBox` + `icons8_close_50`
-- **Branding assets**: `Logo.ico` (application icon), `LogoPng` (header/about logo) via [Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx)
+- **Branding assets**: `Logo.ico` (application icon, shell context-menu icon, installer bundle), `LogoPng` (header/about logo) via [Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx)
+- **Shell context menu**: label, icon, and launch command configured only in [SetupInstaller.iss](SetupInstaller.iss) `[Registry]` — not in C#
 - **No DI, repository layer, service interfaces, or automated tests**
 - **Pass presets are labels only**: DoD/Gutmann/etc. change pass count only; all passes use `RNGCryptoServiceProvider` random bytes
 
@@ -158,21 +159,28 @@ Workflow: Worker completes → delete all `listofPaths` → delete `listOfDirect
 
 ### Shell Integration (Installer)
 
-Purpose: Windows context menu "Shred Securely" for files and folders.
+Purpose: Windows context menu **"Shred Securely"** for files (`*`) and folders (`Directory`).
 
 Entry Points:
-- [SetupInstaller.iss](SetupInstaller.iss) — `[Registry]` section
+- [SetupInstaller.iss](SetupInstaller.iss) — `[Registry]` (menu label, icon, command) and `[Files]` (`Logo.ico`)
 
 Primary Files:
 - [SetupInstaller.iss](SetupInstaller.iss)
 
 Related Files:
+- [SecureFileShredder/Logo.ico](SecureFileShredder/Logo.ico) — context-menu icon source
+- [SecureFileShredder/SecureFileShredder.csproj](SecureFileShredder/SecureFileShredder.csproj) — `CopyToOutputDirectory` for `Logo.ico`
 - [.github/workflows/build.yml](.github/workflows/build.yml)
 - [SecureFileShredder/Program.cs](SecureFileShredder/Program.cs)
 
-Dependencies: Inno Setup, HKCR registry keys
+Dependencies: Inno Setup, HKCR keys `*\shell\SecureFileShredder`, `Directory\shell\SecureFileShredder`
 
-Workflow: Install → registry invokes `SecureFileShredder.exe "%1"` → Program/Mainmenu queue flow
+Configuration (all in `SetupInstaller.iss`):
+- Menu text: `(default)` = `"Shred Securely"` on both file and directory keys
+- Menu icon: `Icon` = `{app}\Logo.ico` (installed via `[Files]` from Release output)
+- Command: `SecureFileShredder.exe "%1"` → [Program.cs](SecureFileShredder/Program.cs) `args` → [Mainmenu.cs](SecureFileShredder/Mainmenu.cs) queue
+
+Workflow: Install → registry + `Logo.ico` in app dir → Explorer context menu → exe with path → Program/Mainmenu queue flow
 
 ---
 
@@ -182,7 +190,8 @@ Purpose: Borderless about window with product name and logo.
 
 Entry Points:
 - [SecureFileShredder/About.cs](SecureFileShredder/About.cs) — `About()` constructor
-- [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) — `btnInfo` (info icon; click handler not wired yet)
+- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — `btnInfo_Click` opens dialog
+- [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) — `btnInfo`
 
 Primary Files:
 - [SecureFileShredder/About.cs](SecureFileShredder/About.cs)
@@ -282,11 +291,12 @@ Files:
 
 ### Open About Dialog
 
-Trigger: User clicks info icon (`btnInfo`) — **pending**: no `Click` handler on `btnInfo` or `Mainmenu.cs` wiring yet.
+Trigger: User clicks info icon (`btnInfo`).
 
-Flow: `btnInfo` click → `new About().ShowDialog()` (expected) → user closes → `About.Dispose`
+Flow: `btnInfo_Click` → `new About().ShowDialog()` → user closes → `About.Dispose`
 
 Files:
+- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
 - [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs)
 - [SecureFileShredder/About.cs](SecureFileShredder/About.cs)
 - [SecureFileShredder/About.Designer.cs](SecureFileShredder/About.Designer.cs)
@@ -325,8 +335,8 @@ Files:
 | Shared UI bitmaps (embedded) | [SecureFileShredder/Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx) |
 | Generated resource accessor | [SecureFileShredder/Properties/Resources.Designer.cs](SecureFileShredder/Properties/Resources.Designer.cs) |
 | Source image files | `SecureFileShredder/Resources/` — `LogoPng.png`, `icons8-close-50.png`, `icons8-information-100.png`, `information.png` |
-| App icon (copy to output) | `SecureFileShredder/Logo.ico` |
-| Windows installer + registry | [SetupInstaller.iss](SetupInstaller.iss) |
+| App icon + shell context-menu icon | [SecureFileShredder/Logo.ico](SecureFileShredder/Logo.ico) (`.csproj` + installer `[Files]`) |
+| Windows installer, registry, `MyAppVersion` 1.5 | [SetupInstaller.iss](SetupInstaller.iss) |
 | Release CI/CD | [.github/workflows/build.yml](.github/workflows/build.yml) |
 | Version history | [SecureFileShredder/ChangeLog.txt](SecureFileShredder/ChangeLog.txt) |
 | AI context index | [context.md](context.md) |
@@ -401,13 +411,13 @@ Entry Points: `ShredderController.ShreddFile`
 
 ### Windows Registry (Shell)
 
-Purpose: "Shred Securely" context menu for files (`*`) and directories.
+Purpose: "Shred Securely" context menu for files (`*`) and directories; icon `{app}\Logo.ico`.
 
-Files: [SetupInstaller.iss](SetupInstaller.iss)
+Files: [SetupInstaller.iss](SetupInstaller.iss), [SecureFileShredder/Logo.ico](SecureFileShredder/Logo.ico)
 
 Authentication: N/A (installer writes HKCR)
 
-Entry Points: `[Registry]` keys under `*\shell\SecureFileShredder`, `Directory\shell\SecureFileShredder`
+Entry Points: `[Registry]` `*\shell\SecureFileShredder`, `Directory\shell\SecureFileShredder` (default label, `Icon`, `command`)
 
 ---
 
@@ -489,7 +499,7 @@ May impact: Single-instance behavior, context-menu multi-launch, second-instance
 
 Changing: [SetupInstaller.iss](SetupInstaller.iss)
 
-May impact: Shell context menu, install paths, bundled files, optional file association
+May impact: Shell context menu label/icon/command, `MyAppVersion`, install paths, bundled files (`Logo.ico`), optional file association
 
 ---
 
@@ -519,7 +529,9 @@ May impact: Target framework, output type, icon, content copy rules
 - **UI colors**: form background `#E0E0E0`; primary accent maroon; CTA button red with maroon border
 - **Main form size**: 619×464; header `pictureBox1` + `label1`; chrome buttons `btnInfo`, `btnClose` (top-right)
 - **Bitmap resources**: `LogoPng`, `icons8_close_50`, `icons8_information_100` (plus legacy `icons8_close_48`, `information`)
-- **Application icon**: `Logo.ico` in `.csproj` (`ApplicationIcon`, `CopyToOutputDirectory`)
+- **Application icon**: `Logo.ico` in `.csproj` (`ApplicationIcon`, `CopyToOutputDirectory`); same file used for Explorer context-menu icon via installer `Icon` registry value
+- **Installer version** (`MyAppVersion` in [SetupInstaller.iss](SetupInstaller.iss)): 1.5 — not synced from GitHub release tag or `.csproj` assembly version
+- **About UI version label**: `Version 1.5` in [About.Designer.cs](SecureFileShredder/About.Designer.cs) (display only)
 - Combo items encode numeric values; parsed via `Split` on shred start
 - Progress max during overwrite: `fileCount * passes`
 - Progress during deletion: `listofPaths.Count` (separate phase)

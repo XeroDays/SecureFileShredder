@@ -98,7 +98,7 @@
             label3.Name = "label3";
             label3.Size = new Size(88, 21);
             label3.TabIndex = 15;
-            label3.Text = "Version 1.2";
+            label3.Text = "Version 1.5";
             label3.MouseDown += Form1_MouseDown;
             // 
             // label4
