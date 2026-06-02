@@ -42,9 +42,11 @@
             label4 = new Label();
             cmbBufferSize = new ComboBox();
             pictureBox1 = new PictureBox();
+            btnInfo = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)btnClose).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)btnInfo).BeginInit();
             SuspendLayout();
             // 
             // label1
@@ -63,7 +65,7 @@
             // 
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnClose.Image = Properties.Resources.icons8_close_50;
-            btnClose.Location = new Point(488, 11);
+            btnClose.Location = new Point(579, 11);
             btnClose.Margin = new Padding(3, 4, 3, 4);
             btnClose.Name = "btnClose";
             btnClose.Size = new Size(30, 30);
@@ -82,10 +84,10 @@
             listBoxFiles.AllowDrop = true;
             listBoxFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             listBoxFiles.FormattingEnabled = true;
-            listBoxFiles.Location = new Point(11, 53);
+            listBoxFiles.Location = new Point(11, 60);
             listBoxFiles.Margin = new Padding(3, 4, 3, 4);
             listBoxFiles.Name = "listBoxFiles";
-            listBoxFiles.Size = new Size(505, 284);
+            listBoxFiles.Size = new Size(596, 284);
             listBoxFiles.TabIndex = 2;
             listBoxFiles.DragDrop += listBox1_DragDrop;
             listBoxFiles.DragEnter += Form1_DragEnter;
@@ -99,7 +101,7 @@
             btnStartDeleting.FlatStyle = FlatStyle.Flat;
             btnStartDeleting.Font = new Font("Bahnschrift SemiBold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnStartDeleting.ForeColor = Color.White;
-            btnStartDeleting.Location = new Point(310, 372);
+            btnStartDeleting.Location = new Point(401, 376);
             btnStartDeleting.Margin = new Padding(3, 4, 3, 4);
             btnStartDeleting.Name = "btnStartDeleting";
             btnStartDeleting.Size = new Size(206, 45);
@@ -113,7 +115,7 @@
             label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label2.AutoSize = true;
             label2.ForeColor = Color.Gray;
-            label2.Location = new Point(263, 341);
+            label2.Location = new Point(354, 348);
             label2.Name = "label2";
             label2.Size = new Size(253, 20);
             label2.TabIndex = 4;
@@ -125,14 +127,14 @@
             progressBar.Location = new Point(14, 435);
             progressBar.Margin = new Padding(3, 4, 3, 4);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(499, 13);
+            progressBar.Size = new Size(590, 13);
             progressBar.TabIndex = 5;
             // 
             // cmbPasses
             // 
             cmbPasses.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbPasses.FormattingEnabled = true;
-            cmbPasses.Location = new Point(129, 349);
+            cmbPasses.Location = new Point(129, 359);
             cmbPasses.Margin = new Padding(3, 4, 3, 4);
             cmbPasses.Name = "cmbPasses";
             cmbPasses.Size = new Size(175, 28);
@@ -142,7 +144,7 @@
             // 
             label3.Font = new Font("Bahnschrift", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.Black;
-            label3.Location = new Point(2, 350);
+            label3.Location = new Point(2, 360);
             label3.Name = "label3";
             label3.Size = new Size(123, 23);
             label3.TabIndex = 7;
@@ -153,7 +155,7 @@
             // 
             label4.Font = new Font("Bahnschrift", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.Black;
-            label4.Location = new Point(14, 386);
+            label4.Location = new Point(14, 396);
             label4.Name = "label4";
             label4.Size = new Size(111, 25);
             label4.TabIndex = 9;
@@ -164,7 +166,7 @@
             // 
             cmbBufferSize.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbBufferSize.FormattingEnabled = true;
-            cmbBufferSize.Location = new Point(129, 385);
+            cmbBufferSize.Location = new Point(129, 395);
             cmbBufferSize.Margin = new Padding(3, 4, 3, 4);
             cmbBufferSize.Name = "cmbBufferSize";
             cmbBufferSize.Size = new Size(175, 28);
@@ -182,13 +184,26 @@
             pictureBox1.TabStop = false;
             pictureBox1.MouseDown += Form1_MouseDown;
             // 
+            // btnInfo
+            // 
+            btnInfo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnInfo.Image = Properties.Resources.icons8_information_100;
+            btnInfo.Location = new Point(543, 11);
+            btnInfo.Margin = new Padding(3, 4, 3, 4);
+            btnInfo.Name = "btnInfo";
+            btnInfo.Size = new Size(30, 30);
+            btnInfo.SizeMode = PictureBoxSizeMode.StretchImage;
+            btnInfo.TabIndex = 11;
+            btnInfo.TabStop = false;
+            // 
             // Mainmenu
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(224, 224, 224);
-            ClientSize = new Size(528, 464);
+            ClientSize = new Size(619, 464);
+            Controls.Add(btnInfo);
             Controls.Add(pictureBox1);
             Controls.Add(label4);
             Controls.Add(cmbBufferSize);
@@ -212,6 +227,7 @@
             ((System.ComponentModel.ISupportInitialize)btnClose).EndInit();
             ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)btnInfo).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -231,5 +247,6 @@
         private Label label4;
         private ComboBox cmbBufferSize;
         private PictureBox pictureBox1;
+        private PictureBox btnInfo;
     }
 }

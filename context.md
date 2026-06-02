@@ -22,11 +22,14 @@
 
 ## Architecture Rules
 
-- **WinForms partial class**: UI in [Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) + [Mainmenu.resx](SecureFileShredder/Mainmenu.resx); behavior in [Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
+- **WinForms partial class**: UI in `*.Designer.cs` + `*.resx`; behavior in matching `*.cs`
+- **Primary form**: [Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — shredding UI; **secondary form**: [About.cs](SecureFileShredder/About.cs) — about/branding dialog
 - **Shredding algorithm** in [ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs); **queue, config, progress, deletion** stay in `Mainmenu`
 - **Static shared state**: `PASSES`, `Buffer_Size` on `Mainmenu`, set at shred start, consumed by `ShredderController`
 - **Overwrite then delete**: `BackgroundWorker` overwrites; `File.Delete` / `Directory.Delete` in `RunWorkerCompleted` on UI thread
 - **Single instance**: Mutex `"SecureShredder"` in [Program.cs](SecureFileShredder/Program.cs); second instance uses `WM_COPYDATA` IPC
+- **Borderless chrome**: `Mainmenu` and `About` use `FormBorderStyle.None`; close via `PictureBox` + `icons8_close_50`
+- **Branding assets**: `Logo.ico` (application icon), `LogoPng` (header/about logo) via [Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx)
 - **No DI, repository layer, service interfaces, or automated tests**
 - **Pass presets are labels only**: DoD/Gutmann/etc. change pass count only; all passes use `RNGCryptoServiceProvider` random bytes
 
@@ -173,6 +176,28 @@ Workflow: Install → registry invokes `SecureFileShredder.exe "%1"` → Program
 
 ---
 
+### About Dialog
+
+Purpose: Borderless about window with product name and logo.
+
+Entry Points:
+- [SecureFileShredder/About.cs](SecureFileShredder/About.cs) — `About()` constructor
+- [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) — `btnInfo` (info icon; click handler not wired yet)
+
+Primary Files:
+- [SecureFileShredder/About.cs](SecureFileShredder/About.cs)
+- [SecureFileShredder/About.Designer.cs](SecureFileShredder/About.Designer.cs)
+
+Related Files:
+- [SecureFileShredder/About.resx](SecureFileShredder/About.resx)
+- [SecureFileShredder/Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx) — `LogoPng`, `icons8_close_50`
+
+Dependencies: WinForms, embedded bitmap resources
+
+Workflow: Intended: `btnInfo` click → show `About` → close disposes form (`btnClose_Click`)
+
+---
+
 ### License Controller (Stub)
 
 Purpose: Placeholder for future licensing; unused.
@@ -251,7 +276,20 @@ Flow: `btnClose_Click` → `cancelRunner` → `CancelAsync` → worker breaks �
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
 - [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs)
-- [SecureFileShredder/Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx) — close icon
+- [SecureFileShredder/Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx) — `icons8_close_50`
+
+---
+
+### Open About Dialog
+
+Trigger: User clicks info icon (`btnInfo`) — **pending**: no `Click` handler on `btnInfo` or `Mainmenu.cs` wiring yet.
+
+Flow: `btnInfo` click → `new About().ShowDialog()` (expected) → user closes → `About.Dispose`
+
+Files:
+- [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs)
+- [SecureFileShredder/About.cs](SecureFileShredder/About.cs)
+- [SecureFileShredder/About.Designer.cs](SecureFileShredder/About.Designer.cs)
 
 ---
 
@@ -275,18 +313,23 @@ Files:
 |----------------|------|
 | Application entry, mutex, IPC send | [SecureFileShredder/Program.cs](SecureFileShredder/Program.cs) |
 | UI logic, queue, worker, deletion | [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) |
-| WinForms controls layout | [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) |
-| Form embedded resources (icon) | [SecureFileShredder/Mainmenu.resx](SecureFileShredder/Mainmenu.resx) |
+| Main form layout (619×464, logo header, info/close) | [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) |
+| Main form embedded icon | [SecureFileShredder/Mainmenu.resx](SecureFileShredder/Mainmenu.resx) |
+| About dialog logic | [SecureFileShredder/About.cs](SecureFileShredder/About.cs) |
+| About dialog layout | [SecureFileShredder/About.Designer.cs](SecureFileShredder/About.Designer.cs) |
+| About form resources | [SecureFileShredder/About.resx](SecureFileShredder/About.resx) |
 | Overwrite algorithm | [SecureFileShredder/Controllers/ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs) |
 | License stub (unused) | [SecureFileShredder/Controllers/LicenseController.cs](SecureFileShredder/Controllers/LicenseController.cs) |
-| Project/build config | [SecureFileShredder/SecureFileShredder.csproj](SecureFileShredder/SecureFileShredder.csproj) |
+| Project/build config, `Logo.ico` | [SecureFileShredder/SecureFileShredder.csproj](SecureFileShredder/SecureFileShredder.csproj) |
 | Solution | [SecureFileShredder.sln](SecureFileShredder.sln) |
-| UI bitmap resources | [SecureFileShredder/Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx) |
+| Shared UI bitmaps (embedded) | [SecureFileShredder/Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx) |
 | Generated resource accessor | [SecureFileShredder/Properties/Resources.Designer.cs](SecureFileShredder/Properties/Resources.Designer.cs) |
-| App icon (content, copy to output) | `SecureFileShredder/icons8-demolition-96.ico` |
+| Source image files | `SecureFileShredder/Resources/` — `LogoPng.png`, `icons8-close-50.png`, `icons8-information-100.png`, `information.png` |
+| App icon (copy to output) | `SecureFileShredder/Logo.ico` |
 | Windows installer + registry | [SetupInstaller.iss](SetupInstaller.iss) |
 | Release CI/CD | [.github/workflows/build.yml](.github/workflows/build.yml) |
 | Version history | [SecureFileShredder/ChangeLog.txt](SecureFileShredder/ChangeLog.txt) |
+| AI context index | [context.md](context.md) |
 | Human-facing overview | [README.md](README.md) |
 | License text | [LICENSE.txt](LICENSE.txt) |
 | Git ignore rules | [.gitignore](.gitignore) |
@@ -414,7 +457,23 @@ May impact: File queue, folder expansion, deletion timing, cancellation, UI stat
 
 Changing: [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs), [SecureFileShredder/Mainmenu.resx](SecureFileShredder/Mainmenu.resx)
 
-May impact: Control bindings, drag-drop, layout, event wiring
+May impact: Control bindings, drag-drop, layout, header logo, info button, form size, event wiring
+
+---
+
+### About form
+
+Changing: [SecureFileShredder/About.cs](SecureFileShredder/About.cs), [SecureFileShredder/About.Designer.cs](SecureFileShredder/About.Designer.cs)
+
+May impact: About dialog display, branding presentation, close behavior
+
+---
+
+### Properties/Resources
+
+Changing: [SecureFileShredder/Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx), files under `SecureFileShredder/Resources/`
+
+May impact: Logo, close/info icons on `Mainmenu` and `About`
 
 ---
 
@@ -456,6 +515,11 @@ May impact: Target framework, output type, icon, content copy rules
 - Form class `Mainmenu`; window title `"Mainmenu"` used by `FindWindow`
 - `Controllers/` for extracted logic (refactor in progress; deletion still in form)
 - Designer code in `*.Designer.cs`; strings/images in `*.resx`
+- **UI typography**: title `Copperplate Gothic Bold` (maroon); config labels `Bahnschrift`; shred button `Bahnschrift SemiBold` (red/maroon)
+- **UI colors**: form background `#E0E0E0`; primary accent maroon; CTA button red with maroon border
+- **Main form size**: 619×464; header `pictureBox1` + `label1`; chrome buttons `btnInfo`, `btnClose` (top-right)
+- **Bitmap resources**: `LogoPng`, `icons8_close_50`, `icons8_information_100` (plus legacy `icons8_close_48`, `information`)
+- **Application icon**: `Logo.ico` in `.csproj` (`ApplicationIcon`, `CopyToOutputDirectory`)
 - Combo items encode numeric values; parsed via `Split` on shred start
 - Progress max during overwrite: `fileCount * passes`
 - Progress during deletion: `listofPaths.Count` (separate phase)
