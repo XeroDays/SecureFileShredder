@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Secure Shredder"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.2"
 #define MyAppPublisher "Softasium Software Solutions"
 #define MyAppURL "https://www.softasium.com"
 #define MyAppExeName "SecureFileShredder.exe"
@@ -40,7 +40,7 @@ Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.pdb"; 
 Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.deps.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "SecureFileShredder\bin\Release\net8.0-windows\icons8-demolition-96.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "SecureFileShredder\bin\Release\net8.0-windows\Logo.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 ; File association for .exe files (optional)
@@ -53,12 +53,12 @@ Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes
 ; Context menu for all files
 Root: HKCR; Subkey: "*\shell\SecureFileShredder"; ValueType: string; ValueName: ""; ValueData: "Shred Securely"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "*\shell\SecureFileShredder\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
-Root: HKCR; Subkey: "*\shell\SecureFileShredder"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\icons8-demolition-96.ico"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "*\shell\SecureFileShredder"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\Logo.ico"; Flags: uninsdeletekey
 
 ; Context menu for directories
 Root: HKCR; Subkey: "Directory\shell\SecureFileShredder"; ValueType: string; ValueName: ""; ValueData: "Shred Securely"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "Directory\shell\SecureFileShredder\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Flags: uninsdeletekey
-Root: HKCR; Subkey: "Directory\shell\SecureFileShredder"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\icons8-demolition-96.ico"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Directory\shell\SecureFileShredder"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\Logo.ico"; Flags: uninsdeletekey
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
