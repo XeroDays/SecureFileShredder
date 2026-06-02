@@ -41,18 +41,20 @@
             label3 = new Label();
             label4 = new Label();
             cmbBufferSize = new ComboBox();
+            pictureBox1 = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)btnClose).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI Semibold", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.Font = new Font("Copperplate Gothic Bold", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.Maroon;
-            label1.Location = new Point(7, 8);
+            label1.Location = new Point(47, 13);
             label1.Name = "label1";
-            label1.Size = new Size(266, 37);
+            label1.Size = new Size(358, 31);
             label1.TabIndex = 0;
             label1.Text = "Secure File Shredder";
             label1.MouseDown += Form1_MouseDown;
@@ -60,11 +62,11 @@
             // btnClose
             // 
             btnClose.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnClose.Image = Properties.Resources.icons8_close_48;
-            btnClose.Location = new Point(528, 9);
+            btnClose.Image = Properties.Resources.icons8_close_50;
+            btnClose.Location = new Point(488, 11);
             btnClose.Margin = new Padding(3, 4, 3, 4);
             btnClose.Name = "btnClose";
-            btnClose.Size = new Size(37, 39);
+            btnClose.Size = new Size(30, 30);
             btnClose.SizeMode = PictureBoxSizeMode.StretchImage;
             btnClose.TabIndex = 1;
             btnClose.TabStop = false;
@@ -83,7 +85,7 @@
             listBoxFiles.Location = new Point(11, 53);
             listBoxFiles.Margin = new Padding(3, 4, 3, 4);
             listBoxFiles.Name = "listBoxFiles";
-            listBoxFiles.Size = new Size(553, 284);
+            listBoxFiles.Size = new Size(505, 284);
             listBoxFiles.TabIndex = 2;
             listBoxFiles.DragDrop += listBox1_DragDrop;
             listBoxFiles.DragEnter += Form1_DragEnter;
@@ -95,12 +97,12 @@
             btnStartDeleting.BackColor = Color.Red;
             btnStartDeleting.FlatAppearance.BorderColor = Color.Maroon;
             btnStartDeleting.FlatStyle = FlatStyle.Flat;
-            btnStartDeleting.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnStartDeleting.Font = new Font("Bahnschrift SemiBold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnStartDeleting.ForeColor = Color.White;
-            btnStartDeleting.Location = new Point(371, 372);
+            btnStartDeleting.Location = new Point(310, 372);
             btnStartDeleting.Margin = new Padding(3, 4, 3, 4);
             btnStartDeleting.Name = "btnStartDeleting";
-            btnStartDeleting.Size = new Size(193, 45);
+            btnStartDeleting.Size = new Size(206, 45);
             btnStartDeleting.TabIndex = 3;
             btnStartDeleting.Text = "Start Shredding to bits";
             btnStartDeleting.UseVisualStyleBackColor = false;
@@ -111,7 +113,7 @@
             label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label2.AutoSize = true;
             label2.ForeColor = Color.Gray;
-            label2.Location = new Point(311, 341);
+            label2.Location = new Point(263, 341);
             label2.Name = "label2";
             label2.Size = new Size(253, 20);
             label2.TabIndex = 4;
@@ -123,7 +125,7 @@
             progressBar.Location = new Point(14, 435);
             progressBar.Margin = new Padding(3, 4, 3, 4);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(547, 13);
+            progressBar.Size = new Size(499, 13);
             progressBar.TabIndex = 5;
             // 
             // cmbPasses
@@ -138,7 +140,7 @@
             // 
             // label3
             // 
-            label3.Font = new Font("Candara", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label3.Font = new Font("Bahnschrift", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.Black;
             label3.Location = new Point(2, 350);
             label3.Name = "label3";
@@ -149,7 +151,7 @@
             // 
             // label4
             // 
-            label4.Font = new Font("Candara", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label4.Font = new Font("Bahnschrift", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.Black;
             label4.Location = new Point(14, 386);
             label4.Name = "label4";
@@ -168,13 +170,26 @@
             cmbBufferSize.Size = new Size(175, 28);
             cmbBufferSize.TabIndex = 8;
             // 
+            // pictureBox1
+            // 
+            pictureBox1.Image = Properties.Resources.LogoPng;
+            pictureBox1.Location = new Point(8, 2);
+            pictureBox1.Margin = new Padding(3, 4, 3, 4);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(42, 48);
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox1.TabIndex = 10;
+            pictureBox1.TabStop = false;
+            pictureBox1.MouseDown += Form1_MouseDown;
+            // 
             // Mainmenu
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(224, 224, 224);
-            ClientSize = new Size(576, 464);
+            ClientSize = new Size(528, 464);
+            Controls.Add(pictureBox1);
             Controls.Add(label4);
             Controls.Add(cmbBufferSize);
             Controls.Add(label3);
@@ -196,6 +211,7 @@
             MouseDown += Form1_MouseDown;
             ((System.ComponentModel.ISupportInitialize)btnClose).EndInit();
             ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -214,5 +230,6 @@
         private Label label3;
         private Label label4;
         private ComboBox cmbBufferSize;
+        private PictureBox pictureBox1;
     }
 }
