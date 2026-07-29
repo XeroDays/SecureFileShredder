@@ -1,0 +1,7 @@
+This is a dummy test file for Secure File Shredder.
+It is intentionally locked by LockFile.ps1 so you can
+simulate the "file in use" shredding error.
+
+Line 4: sample content
+Line 5: more dummy text
+Line 6: end of file

@@ -14,6 +14,13 @@ namespace SecureFileShredder
 
         List<string> listofPaths = new List<string>();
         List<string> listOfDirectories = new List<string>();
+        ShredBatchResult? lastShredResult;
+
+        private sealed class ShredBatchResult
+        {
+            public List<string> Succeeded { get; } = new List<string>();
+            public List<(string Path, string Reason)> Failed { get; } = new List<(string Path, string Reason)>();
+        }
 
         protected override void WndProc(ref Message m)
         {
@@ -131,18 +138,30 @@ namespace SecureFileShredder
         {
             List<string> filesToShred = (List<string>)e.Argument;
             int progress = 0;
+            var result = new ShredBatchResult();
 
             foreach (string file in filesToShred)
             {
-
                 if (backgroundWorker.CancellationPending)
                 {
                     e.Cancel = true;
                     break;
                 }
-                ShredFile(file, backgroundWorker, ref progress);
-                listBoxFiles.Invoke(new Action(() => listBoxFiles.Items.Remove(file)));
+
+                try
+                {
+                    ShredFile(file, backgroundWorker, ref progress);
+                    result.Succeeded.Add(file);
+                    listBoxFiles.Invoke(new Action(() => listBoxFiles.Items.Remove(file)));
+                }
+                catch (Exception ex)
+                {
+                    result.Failed.Add((file, ex.Message));
+                }
             }
+
+            lastShredResult = result;
+            e.Result = result;
         }
 
         private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -154,6 +173,7 @@ namespace SecureFileShredder
         {
             if (e.Cancelled)
             {
+                FinalizeSucceededFiles(lastShredResult);
                 MessageBox.Show("File shredding operation was cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else if (e.Error != null)
@@ -162,30 +182,89 @@ namespace SecureFileShredder
             }
             else
             {
-                progressBar.Value = 0;
-                progressBar.Maximum = listofPaths.Count;
-                foreach (string file in listofPaths)
-                {
-                    File.Delete(file);
-                    progressBar.Value++;
-                }
+                var result = e.Result as ShredBatchResult ?? lastShredResult ?? new ShredBatchResult();
+                FinalizeSucceededFiles(result);
 
-                foreach (string directory in listOfDirectories)
+                if (result.Failed.Count == 0)
                 {
-                    if (Directory.Exists(directory))
-                    {
-                        Directory.Delete(directory, true);
-                    }
+                    listBoxFiles.Items.Clear();
+                    listofPaths.Clear();
+                    listOfDirectories.Clear();
+                    MessageBox.Show("Files have been shredded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-
-                MessageBox.Show("Files have been shredded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                else
+                {
+                    string firstReason = result.Failed[0].Reason;
+                    MessageBox.Show(
+                        $"{result.Succeeded.Count} file(s) shredded successfully.\n" +
+                        $"{result.Failed.Count} file(s) could not be shredded and remain in the list.\n\n" +
+                        $"Example: {firstReason}",
+                        "Completed with errors",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
             }
 
             btnStartDeleting.Visible = true;
             progressBar.Visible = false;
-            listBoxFiles.Items.Clear();
-            listofPaths.Clear();
+            lastShredResult = null;
+        }
 
+        private void FinalizeSucceededFiles(ShredBatchResult? result)
+        {
+            if (result == null || result.Succeeded.Count == 0)
+            {
+                return;
+            }
+
+            progressBar.Value = 0;
+            progressBar.Maximum = result.Succeeded.Count;
+
+            foreach (string file in result.Succeeded)
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+
+                listofPaths.Remove(file);
+                if (progressBar.Value < progressBar.Maximum)
+                {
+                    progressBar.Value++;
+                }
+            }
+
+            var directoriesToRemove = new List<string>();
+            foreach (string directory in listOfDirectories)
+            {
+                bool hasRemainingFiles = listofPaths.Any(path => IsPathUnderDirectory(path, directory));
+                if (hasRemainingFiles)
+                {
+                    continue;
+                }
+
+                if (Directory.Exists(directory))
+                {
+                    Directory.Delete(directory, true);
+                }
+
+                directoriesToRemove.Add(directory);
+                listBoxFiles.Items.Remove(directory);
+            }
+
+            foreach (string directory in directoriesToRemove)
+            {
+                listOfDirectories.Remove(directory);
+            }
+        }
+
+        private static bool IsPathUnderDirectory(string filePath, string directory)
+        {
+            string directoryFull = Path.GetFullPath(directory)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                + Path.DirectorySeparatorChar;
+            string fileFull = Path.GetFullPath(filePath);
+            return fileFull.StartsWith(directoryFull, StringComparison.OrdinalIgnoreCase);
         }
 
         private void cancelRunner()

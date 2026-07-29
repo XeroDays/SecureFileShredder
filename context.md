@@ -26,7 +26,7 @@
 - **Primary form**: [Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — shredding UI; **secondary form**: [About.cs](SecureFileShredder/About.cs) — about/branding dialog
 - **Shredding algorithm** in [ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs); **queue, config, progress, deletion** stay in `Mainmenu`
 - **Static shared state**: `PASSES`, `Buffer_Size` on `Mainmenu`, set at shred start, consumed by `ShredderController`
-- **Overwrite then delete**: `BackgroundWorker` overwrites; `File.Delete` / `Directory.Delete` in `RunWorkerCompleted` on UI thread
+- **Overwrite then delete**: `BackgroundWorker` overwrites per file (failures skipped, batch continues); `File.Delete` / `Directory.Delete` in `RunWorkerCompleted` only for successes; failed paths stay in queue
 - **Single instance**: Mutex `"SecureShredder"` in [Program.cs](SecureFileShredder/Program.cs); second instance uses `WM_COPYDATA` IPC
 - **Borderless chrome**: `Mainmenu` and `About` use `FormBorderStyle.None`; close via `PictureBox` + `icons8_close_50`
 - **Branding assets**: `Logo.ico` (application icon, shell context-menu icon, installer bundle), `LogoPng` (header/about logo) via [Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx)
@@ -134,16 +134,16 @@ Related Files:
 
 Dependencies: `RNGCryptoServiceProvider`, `BackgroundWorker` progress reporting
 
-Workflow: Per file → N passes → random bytes written in buffer chunks → `ReportProgress` per pass
+Workflow: Per file → try overwrite → on success track + remove from listbox → on failure (e.g. in use) track and continue → N passes → random bytes in buffer chunks → `ReportProgress` per pass
 
 ---
 
 ### Post-Shred Deletion
 
-Purpose: Remove overwritten files and empty dragged root folders.
+Purpose: Remove successfully overwritten files and empty dragged root folders; keep failed paths queued.
 
 Entry Points:
-- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — `BackgroundWorker_RunWorkerCompleted`
+- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — `BackgroundWorker_RunWorkerCompleted`, `FinalizeSucceededFiles`
 
 Primary Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -153,7 +153,7 @@ Related Files:
 
 Dependencies: `File.Delete`, `Directory.Delete(recursive)`
 
-Workflow: Worker completes → delete all `listofPaths` → delete `listOfDirectories` roots → success dialog → clear UI state
+Workflow: Worker completes → delete only succeeded paths → delete `listOfDirectories` roots with no remaining queued files → success or partial-failure dialog → clear queue only if all succeeded
 
 ---
 
@@ -256,7 +256,7 @@ Files:
 
 Trigger: User clicks Start after queue populated.
 
-Flow: Confirm dialog → parse passes/buffer from combos → validate queue → hide start button → `BackgroundWorker.RunWorkerAsync` → per file `ShredderController.ShreddFile` → progress updates → remove item from listbox
+Flow: Confirm dialog → parse passes/buffer from combos → validate queue → hide start button → `BackgroundWorker.RunWorkerAsync` → per file try `ShredderController.ShreddFile` → on success remove from listbox / on failure continue → progress updates → `ShredBatchResult` via `e.Result`
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -267,9 +267,9 @@ Files:
 
 ### Complete Shredding
 
-Trigger: BackgroundWorker finishes without cancel/error.
+Trigger: BackgroundWorker finishes without cancel/unexpected worker error.
 
-Flow: `RunWorkerCompleted` → `File.Delete` each queued file → `Directory.Delete` each root folder → success MessageBox → reset progress/UI/lists
+Flow: `RunWorkerCompleted` → `FinalizeSucceededFiles` (`File.Delete` successes only; `Directory.Delete` roots with no remaining queue files) → all-success MessageBox and clear queue, or partial-failure MessageBox leaving failed paths in `listofPaths` / listbox
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -280,7 +280,7 @@ Files:
 
 Trigger: User closes window during shred.
 
-Flow: `btnClose_Click` → `cancelRunner` → `CancelAsync` → worker breaks → cancelled MessageBox → UI restored
+Flow: `btnClose_Click` → `cancelRunner` → `CancelAsync` → worker breaks → finalize any already-succeeded overwrites → cancelled MessageBox → restore UI; remaining unprocessed/failed paths stay in queue
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -357,9 +357,9 @@ User input (drag / CLI / context menu / IPC)
   → listofPaths + listOfDirectories
   → btnStartDeleting (sets PASSES, Buffer_Size)
   → BackgroundWorker.DoWork
-  → ShredderController.ShreddFile (RNG overwrite, N passes)
+  → per file: ShredderController.ShreddFile (skip/continue on failure)
   → BackgroundWorker.RunWorkerCompleted
-  → File.Delete + Directory.Delete
+  → File.Delete successes + Directory.Delete empty roots; failed paths remain queued
 ```
 
 ### Secondary IPC pipeline
