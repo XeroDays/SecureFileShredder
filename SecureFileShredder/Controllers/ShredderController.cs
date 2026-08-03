@@ -20,6 +20,11 @@ namespace SecureFileShredder.Controllers
 
                 for (int i = 0; i < passes; i++)
                 {
+                    if (worker.CancellationPending)
+                    {
+                        throw new OperationCanceledException();
+                    }
+
                     worker.ReportProgress(++progress);
                     using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Write))
                     {

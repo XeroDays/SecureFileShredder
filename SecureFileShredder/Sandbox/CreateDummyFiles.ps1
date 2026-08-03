@@ -1,7 +1,3 @@
-# Creates throwaway dummy files for Secure File Shredder testing.
-# Run: right-click -> Run with PowerShell, or:
-#   powershell -ExecutionPolicy Bypass -File .\CreateDummyFiles.ps1
-
 $ErrorActionPreference = "Stop"
 
 $extensions = @(".txt", ".bin", ".log", ".dat", ".tmp", ".csv", ".json", ".xml")

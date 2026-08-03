@@ -29,7 +29,7 @@
 - **Overwrite then delete**: `BackgroundWorker` overwrites per file (failures skipped, batch continues); `File.Delete` / `Directory.Delete` in `RunWorkerCompleted` only for successes; failed paths stay in queue
 - **Single instance**: Mutex `"SecureShredder"` in [Program.cs](SecureFileShredder/Program.cs); second instance uses `WM_COPYDATA` IPC
 - **Borderless chrome**: `Mainmenu` and `About` use `FormBorderStyle.None`; close via `PictureBox` + `icons8_close_50`; minimize via `btnMinimize` label on `Mainmenu`
-- **Minimize-to-tray while shredding**: when `BackgroundWorker.IsBusy`, minimize hides to `NotifyIcon` (keep shredding); `btnClose` hidden until shred completes; idle close exits; idle minimize uses `WindowState.Minimized`; tray tooltip shows `Shredding: XX%`; tray icon swaps to `Assets/TaskbarIcon/pct_XXX.ico` badge (1–100); after completion MessageBox app stays open until user clicks Close
+- **Minimize-to-tray while shredding**: when `BackgroundWorker.IsBusy`, minimize hides to `NotifyIcon` (keep shredding); `btnClose` and `label2` hidden until shred completes/stops; start button text becomes **Stop Shredding** (cancels worker); idle close exits; idle minimize uses `WindowState.Minimized`; tray tooltip shows `Shredding: XX%`; tray icon swaps to `Assets/TaskbarIcon/pct_XXX.ico` badge (1–100); after completion MessageBox app stays open until user clicks Close
 - **Branding assets**: `Logo.ico` (application icon, shell context-menu icon, installer bundle), `LogoPng` (header/about logo) via [Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx)
 - **Shell context menu**: label, icon, and launch command configured only in [SetupInstaller.iss](SetupInstaller.iss) `[Registry]` — not in C#
 - **No DI, repository layer, service interfaces, or automated tests**
@@ -279,7 +279,7 @@ Files:
 
 Trigger: User clicks Start after queue populated.
 
-Flow: Confirm dialog → parse passes/buffer from combos → validate queue → hide start button → `BackgroundWorker.RunWorkerAsync` → per file try `ShredderController.ShreddFile` → on success remove from listbox / on failure continue → progress updates → `ShredBatchResult` via `e.Result`
+Flow: Confirm dialog → parse passes/buffer from combos → validate queue → button text `Stop Shredding`; hide `label2` + `btnClose` → `BackgroundWorker.RunWorkerAsync` → per file try `ShredderController.ShreddFile` → on success remove from listbox / on failure continue → progress updates → `ShredBatchResult` via `e.Result`
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -288,11 +288,23 @@ Files:
 
 ---
 
+### Stop Shredding
+
+Trigger: User clicks **Stop Shredding** while worker busy.
+
+Flow: disable button → `CancelAsync` → cancel checked between files and between passes (`OperationCanceledException`) → `FinalizeSucceededFiles` for already-succeeded → cancelled MessageBox → `RestoreIdleShredUi` (start text, show `label2`/`btnClose`, reset/hide progress)
+
+Files:
+- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
+- [SecureFileShredder/Controllers/ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs)
+
+---
+
 ### Complete Shredding
 
 Trigger: BackgroundWorker finishes without cancel/unexpected worker error.
 
-Flow: `RunWorkerCompleted` → restore from tray if hidden → show `btnClose` → `FinalizeSucceededFiles` → success or partial-failure MessageBox → stay open until user clicks Close
+Flow: `RunWorkerCompleted` → restore from tray if hidden → `FinalizeSucceededFiles` → success or partial-failure MessageBox → `RestoreIdleShredUi` → stay open until user clicks Close
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -303,7 +315,7 @@ Files:
 
 Trigger: User clicks minimize or close while `BackgroundWorker.IsBusy`.
 
-Flow: Shred start hides `btnClose` → busy minimize → `MinimizeToTray` + badge/% tooltip → double-click/Restore returns window. Idle minimize → `WindowState.Minimized`; after complete Close → `Application.Exit`.
+Flow: Shred start hides `btnClose` + `label2` → busy minimize → `MinimizeToTray` + badge/% tooltip → double-click/Restore returns window. Idle minimize → `WindowState.Minimized`; after complete Close → `Application.Exit`.
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)

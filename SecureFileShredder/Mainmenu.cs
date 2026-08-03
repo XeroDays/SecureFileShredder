@@ -283,6 +283,11 @@ namespace SecureFileShredder
                     result.Succeeded.Add(file);
                     listBoxFiles.Invoke(new Action(() => listBoxFiles.Items.Remove(file)));
                 }
+                catch (OperationCanceledException)
+                {
+                    e.Cancel = true;
+                    break;
+                }
                 catch (Exception ex)
                 {
                     result.Failed.Add((file, ex.Message));
@@ -291,6 +296,17 @@ namespace SecureFileShredder
 
             lastShredResult = result;
             e.Result = result;
+        }
+
+        private void RestoreIdleShredUi()
+        {
+            btnStartDeleting.Text = "Start Shredding to bits";
+            btnStartDeleting.Enabled = true;
+            btnStartDeleting.Visible = true;
+            btnClose.Visible = true;
+            label2.Visible = true;
+            progressBar.Value = 0;
+            progressBar.Visible = false;
         }
 
         private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -311,14 +327,11 @@ namespace SecureFileShredder
                 RestoreFromTray();
             }
 
-            btnClose.Visible = true;
-
             if (e.Cancelled)
             {
                 FinalizeSucceededFiles(lastShredResult);
                 MessageBox.Show("File shredding operation was cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                btnStartDeleting.Visible = true;
-                progressBar.Visible = false;
+                RestoreIdleShredUi();
                 lastShredResult = null;
                 return;
             }
@@ -352,8 +365,7 @@ namespace SecureFileShredder
                 }
             }
 
-            btnStartDeleting.Visible = true;
-            progressBar.Visible = false;
+            RestoreIdleShredUi();
             lastShredResult = null;
         }
 
@@ -416,6 +428,13 @@ namespace SecureFileShredder
 
         private void btnStartDeleting_Click(object sender, EventArgs e)
         {
+            if (backgroundWorker.IsBusy)
+            {
+                btnStartDeleting.Enabled = false;
+                backgroundWorker.CancelAsync();
+                return;
+            }
+
             string passes = cmbPasses.SelectedItem.ToString().Split("( ").Last().Split("Passes").First().Trim();
             string selectedBufferSize = cmbBufferSize.SelectedItem.ToString().Split("( ").Last().Split("KB").First().Trim();
 
@@ -434,8 +453,9 @@ namespace SecureFileShredder
                 return;
             }
 
-            btnStartDeleting.Visible = false;
+            btnStartDeleting.Text = "Stop Shredding";
             btnClose.Visible = false;
+            label2.Visible = false;
             progressBar.Visible = true;
             progressBar.Maximum = listofPaths.Count * PASSES;
             progressBar.Value = 0;
