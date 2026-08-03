@@ -28,7 +28,8 @@
 - **Static shared state**: `PASSES`, `Buffer_Size` on `Mainmenu`, set at shred start, consumed by `ShredderController`
 - **Overwrite then delete**: `BackgroundWorker` overwrites per file (failures skipped, batch continues); `File.Delete` / `Directory.Delete` in `RunWorkerCompleted` only for successes; failed paths stay in queue
 - **Single instance**: Mutex `"SecureShredder"` in [Program.cs](SecureFileShredder/Program.cs); second instance uses `WM_COPYDATA` IPC
-- **Borderless chrome**: `Mainmenu` and `About` use `FormBorderStyle.None`; close via `PictureBox` + `icons8_close_50`
+- **Borderless chrome**: `Mainmenu` and `About` use `FormBorderStyle.None`; close via `PictureBox` + `icons8_close_50`; minimize via `btnMinimize` label on `Mainmenu`
+- **Minimize-to-tray while shredding**: when `BackgroundWorker.IsBusy`, minimize hides to `NotifyIcon` (keep shredding); `btnClose` hidden until shred completes; idle close exits; idle minimize uses `WindowState.Minimized`; tray tooltip shows `Shredding: XX%`; tray icon swaps to `Assets/TaskbarIcon/pct_XXX.ico` badge (1–100); after completion MessageBox app stays open until user clicks Close
 - **Branding assets**: `Logo.ico` (application icon, shell context-menu icon, installer bundle), `LogoPng` (header/about logo) via [Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx)
 - **Shell context menu**: label, icon, and launch command configured only in [SetupInstaller.iss](SetupInstaller.iss) `[Registry]` — not in C#
 - **No DI, repository layer, service interfaces, or automated tests**
@@ -184,6 +185,28 @@ Workflow: Install → registry + `Logo.ico` in app dir → Explorer context menu
 
 ---
 
+### Minimize to Tray While Shredding
+
+Purpose: Hide main window to system tray while shredding continues; show live percentage; exit after completion MessageBox.
+
+Entry Points:
+- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — `btnClose_Click`, `btnMinimize_Click`, `MinimizeToTray`, `RestoreFromTray`
+
+Primary Files:
+- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
+- [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs)
+- [SecureFileShredder/Assets/TaskbarIcon/](SecureFileShredder/Assets/TaskbarIcon/) — `pct_001.ico` … `pct_100.ico`
+
+Related Files:
+- [SecureFileShredder/Logo.ico](SecureFileShredder/Logo.ico)
+- [SecureFileShredder/Sandbox/GenerateTaskbarIcons.ps1](SecureFileShredder/Sandbox/GenerateTaskbarIcons.ps1) — regenerates badge icons from `Logo.ico`
+
+Dependencies: `NotifyIcon`, `ContextMenuStrip`
+
+Workflow: Busy minimize → tray + progress tooltip + badge icon swap via `UpdateTrayProgressIcon` → restore on double-click; close hidden during shred; completion MessageBox then stay open until Close
+
+---
+
 ### About Dialog
 
 Purpose: Borderless about window with product name and logo.
@@ -269,18 +292,30 @@ Files:
 
 Trigger: BackgroundWorker finishes without cancel/unexpected worker error.
 
-Flow: `RunWorkerCompleted` → `FinalizeSucceededFiles` (`File.Delete` successes only; `Directory.Delete` roots with no remaining queue files) → all-success MessageBox and clear queue, or partial-failure MessageBox leaving failed paths in `listofPaths` / listbox
+Flow: `RunWorkerCompleted` → restore from tray if hidden → show `btnClose` → `FinalizeSucceededFiles` → success or partial-failure MessageBox → stay open until user clicks Close
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
 
 ---
 
-### Cancel or Exit
+### Minimize or Close During Shred
 
-Trigger: User closes window during shred.
+Trigger: User clicks minimize or close while `BackgroundWorker.IsBusy`.
 
-Flow: `btnClose_Click` → `cancelRunner` → `CancelAsync` → worker breaks → finalize any already-succeeded overwrites → cancelled MessageBox → restore UI; remaining unprocessed/failed paths stay in queue
+Flow: Shred start hides `btnClose` → busy minimize → `MinimizeToTray` + badge/% tooltip → double-click/Restore returns window. Idle minimize → `WindowState.Minimized`; after complete Close → `Application.Exit`.
+
+Files:
+- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
+- [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs)
+
+---
+
+### Exit After Complete
+
+Trigger: User clicks Close when shredding is not running.
+
+Flow: `btnClose_Click` → `Application.Exit` (close is hidden while `BackgroundWorker.IsBusy`)
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -323,7 +358,7 @@ Files:
 |----------------|------|
 | Application entry, mutex, IPC send | [SecureFileShredder/Program.cs](SecureFileShredder/Program.cs) |
 | UI logic, queue, worker, deletion | [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) |
-| Main form layout (619×464, logo header, info/close) | [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) |
+| Main form layout (619×464, logo header, info/minimize/close) | [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) |
 | Main form embedded icon | [SecureFileShredder/Mainmenu.resx](SecureFileShredder/Mainmenu.resx) |
 | About dialog logic | [SecureFileShredder/About.cs](SecureFileShredder/About.cs) |
 | About dialog layout | [SecureFileShredder/About.Designer.cs](SecureFileShredder/About.Designer.cs) |
@@ -336,6 +371,8 @@ Files:
 | Generated resource accessor | [SecureFileShredder/Properties/Resources.Designer.cs](SecureFileShredder/Properties/Resources.Designer.cs) |
 | Source image files | `SecureFileShredder/Resources/` — `LogoPng.png`, `icons8-close-50.png`, `icons8-information-100.png`, `information.png` |
 | App icon + shell context-menu icon | [SecureFileShredder/Logo.ico](SecureFileShredder/Logo.ico) (`.csproj` + installer `[Files]`) |
+| Tray progress badge icons (1–100%) | [SecureFileShredder/Assets/TaskbarIcon/](SecureFileShredder/Assets/TaskbarIcon/) (`pct_001.ico`–`pct_100.ico`) |
+| Regenerate tray badge icons | [SecureFileShredder/Sandbox/GenerateTaskbarIcons.ps1](SecureFileShredder/Sandbox/GenerateTaskbarIcons.ps1) |
 | Windows installer, registry, `MyAppVersion` 1.5 | [SetupInstaller.iss](SetupInstaller.iss) |
 | Release CI/CD | [.github/workflows/build.yml](.github/workflows/build.yml) |
 | Version history | [SecureFileShredder/ChangeLog.txt](SecureFileShredder/ChangeLog.txt) |
@@ -527,7 +564,8 @@ May impact: Target framework, output type, icon, content copy rules
 - Designer code in `*.Designer.cs`; strings/images in `*.resx`
 - **UI typography**: title `Copperplate Gothic Bold` (maroon); config labels `Bahnschrift`; shred button `Bahnschrift SemiBold` (red/maroon)
 - **UI colors**: form background `#E0E0E0`; primary accent maroon; CTA button red with maroon border
-- **Main form size**: 619×464; header `pictureBox1` + `label1`; chrome buttons `btnInfo`, `btnClose` (top-right)
+- **Main form size**: 619×464; header `pictureBox1` + `label1`; chrome buttons `btnInfo`, `btnMinimize`, `btnClose` (top-right)
+- **Tray**: `NotifyIcon` visible only while minimized during shred; tooltip percentage from `progressBar` value/max; live badge icons in `Assets/TaskbarIcon/pct_001.ico`–`pct_100.ico` (copied to output)
 - **Bitmap resources**: `LogoPng`, `icons8_close_50`, `icons8_information_100` (plus legacy `icons8_close_48`, `information`)
 - **Application icon**: `Logo.ico` in `.csproj` (`ApplicationIcon`, `CopyToOutputDirectory`); same file used for Explorer context-menu icon via installer `Icon` registry value
 - **Installer version** (`MyAppVersion` in [SetupInstaller.iss](SetupInstaller.iss)): 1.5 — not synced from GitHub release tag or `.csproj` assembly version

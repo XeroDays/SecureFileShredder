@@ -15,6 +15,11 @@ namespace SecureFileShredder
         List<string> listofPaths = new List<string>();
         List<string> listOfDirectories = new List<string>();
         ShredBatchResult? lastShredResult;
+        NotifyIcon? notifyIcon;
+        Icon? trayProgressIcon;
+        Icon? trayBaseIcon;
+        bool isMinimizedToTray;
+        int lastTrayPercent = -1;
 
         private sealed class ShredBatchResult
         {
@@ -45,14 +50,138 @@ namespace SecureFileShredder
         {
             InitializeComponent();
             InitializeBackgroundWorker();
+            InitializeNotifyIcon();
             progressBar.Visible = false;
             setupPassesCombo();
             setupBufferSizeCombo();
-
+            FormClosing += Mainmenu_FormClosing;
 
             if (args != null && args.Length > 0)
             {
                 updateListWithFiles(args);
+            }
+        }
+
+        private void InitializeNotifyIcon()
+        {
+            var trayMenu = new ContextMenuStrip();
+            trayMenu.Items.Add("Restore", null, (_, _) => RestoreFromTray());
+
+            trayBaseIcon = Icon ?? SystemIcons.Application;
+            notifyIcon = new NotifyIcon
+            {
+                Icon = trayBaseIcon,
+                Text = "Secure File Shredder",
+                Visible = false,
+                ContextMenuStrip = trayMenu
+            };
+            notifyIcon.DoubleClick += (_, _) => RestoreFromTray();
+        }
+
+        private int GetShredPercent()
+        {
+            if (progressBar.Maximum <= 0)
+            {
+                return 0;
+            }
+
+            return (int)(progressBar.Value * 100.0 / progressBar.Maximum);
+        }
+
+        private void UpdateTrayProgressIcon(int percent)
+        {
+            if (notifyIcon == null)
+            {
+                return;
+            }
+
+            if (percent <= 0)
+            {
+                if (trayBaseIcon != null)
+                {
+                    notifyIcon.Icon = trayBaseIcon;
+                }
+                DisposeTrayProgressIcon();
+                lastTrayPercent = 0;
+                return;
+            }
+
+            int pct = Math.Clamp(percent, 1, 100);
+            if (pct == lastTrayPercent)
+            {
+                return;
+            }
+
+            string path = Path.Combine(AppContext.BaseDirectory, "Assets", "TaskbarIcon", $"pct_{pct:D3}.ico");
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            Icon newIcon = new Icon(path);
+            notifyIcon.Icon = newIcon;
+            DisposeTrayProgressIcon();
+            trayProgressIcon = newIcon;
+            lastTrayPercent = pct;
+        }
+
+        private void DisposeTrayProgressIcon()
+        {
+            if (trayProgressIcon != null)
+            {
+                trayProgressIcon.Dispose();
+                trayProgressIcon = null;
+            }
+        }
+
+        private void MinimizeToTray()
+        {
+            if (notifyIcon == null)
+            {
+                return;
+            }
+
+            isMinimizedToTray = true;
+            int pct = GetShredPercent();
+            notifyIcon.Text = pct > 0 ? $"Shredding: {pct}%" : "Shredding...";
+            UpdateTrayProgressIcon(pct);
+            notifyIcon.Visible = true;
+            ShowInTaskbar = false;
+            Hide();
+        }
+
+        private void RestoreFromTray()
+        {
+            isMinimizedToTray = false;
+            Show();
+            ShowInTaskbar = true;
+            WindowState = FormWindowState.Normal;
+            Activate();
+            if (notifyIcon != null)
+            {
+                notifyIcon.Visible = false;
+                notifyIcon.Text = "Secure File Shredder";
+                if (trayBaseIcon != null)
+                {
+                    notifyIcon.Icon = trayBaseIcon;
+                }
+                DisposeTrayProgressIcon();
+                lastTrayPercent = -1;
+            }
+        }
+
+        private void Mainmenu_FormClosing(object? sender, FormClosingEventArgs e)
+        {
+            if (notifyIcon != null)
+            {
+                notifyIcon.Visible = false;
+                if (trayBaseIcon != null)
+                {
+                    notifyIcon.Icon = trayBaseIcon;
+                }
+                DisposeTrayProgressIcon();
+                notifyIcon.Dispose();
+                notifyIcon = null;
             }
         }
 
@@ -167,16 +296,34 @@ namespace SecureFileShredder
         private void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             progressBar.Value = e.ProgressPercentage;
+            if (notifyIcon != null && notifyIcon.Visible && progressBar.Maximum > 0)
+            {
+                int pct = GetShredPercent();
+                notifyIcon.Text = $"Shredding: {pct}%";
+                UpdateTrayProgressIcon(pct);
+            }
         }
 
         private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            if (isMinimizedToTray)
+            {
+                RestoreFromTray();
+            }
+
+            btnClose.Visible = true;
+
             if (e.Cancelled)
             {
                 FinalizeSucceededFiles(lastShredResult);
                 MessageBox.Show("File shredding operation was cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                btnStartDeleting.Visible = true;
+                progressBar.Visible = false;
+                lastShredResult = null;
+                return;
             }
-            else if (e.Error != null)
+
+            if (e.Error != null)
             {
                 MessageBox.Show("An error occurred during file shredding: " + e.Error.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -267,14 +414,6 @@ namespace SecureFileShredder
             return fileFull.StartsWith(directoryFull, StringComparison.OrdinalIgnoreCase);
         }
 
-        private void cancelRunner()
-        {
-            if (backgroundWorker.IsBusy)
-            {
-                backgroundWorker.CancelAsync();
-            }
-        }
-
         private void btnStartDeleting_Click(object sender, EventArgs e)
         {
             string passes = cmbPasses.SelectedItem.ToString().Split("( ").Last().Split("Passes").First().Trim();
@@ -296,6 +435,7 @@ namespace SecureFileShredder
             }
 
             btnStartDeleting.Visible = false;
+            btnClose.Visible = false;
             progressBar.Visible = true;
             progressBar.Maximum = listofPaths.Count * PASSES;
             progressBar.Value = 0;
@@ -317,8 +457,23 @@ namespace SecureFileShredder
         #region Designer code
         private void btnClose_Click(object sender, EventArgs e)
         {
-            cancelRunner();
+            if (backgroundWorker.IsBusy)
+            {
+                return;
+            }
+
             Application.Exit();
+        }
+
+        private void btnMinimize_Click(object sender, EventArgs e)
+        {
+            if (backgroundWorker.IsBusy)
+            {
+                MinimizeToTray();
+                return;
+            }
+
+            WindowState = FormWindowState.Minimized;
         }
 
         //generate method to drag files into the listbox and list hte file paths in the listbox 

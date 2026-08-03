@@ -43,6 +43,7 @@
             cmbBufferSize = new ComboBox();
             pictureBox1 = new PictureBox();
             btnInfo = new PictureBox();
+            btnMinimize = new Label();
             ((System.ComponentModel.ISupportInitialize)btnClose).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -188,7 +189,7 @@
             // 
             btnInfo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             btnInfo.Image = Properties.Resources.icons8_information_100;
-            btnInfo.Location = new Point(543, 11);
+            btnInfo.Location = new Point(507, 11);
             btnInfo.Margin = new Padding(3, 4, 3, 4);
             btnInfo.Name = "btnInfo";
             btnInfo.Size = new Size(30, 30);
@@ -197,6 +198,20 @@
             btnInfo.TabStop = false;
             btnInfo.Click += btnInfo_Click;
             // 
+            // btnMinimize
+            // 
+            btnMinimize.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnMinimize.Cursor = Cursors.Hand;
+            btnMinimize.Font = new Font("Bahnschrift SemiBold", 16F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnMinimize.ForeColor = Color.Maroon;
+            btnMinimize.Location = new Point(543, 11);
+            btnMinimize.Name = "btnMinimize";
+            btnMinimize.Size = new Size(30, 30);
+            btnMinimize.TabIndex = 12;
+            btnMinimize.Text = "–";
+            btnMinimize.TextAlign = ContentAlignment.MiddleCenter;
+            btnMinimize.Click += btnMinimize_Click;
+            // 
             // Mainmenu
             // 
             AllowDrop = true;
@@ -204,6 +219,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(224, 224, 224);
             ClientSize = new Size(619, 464);
+            Controls.Add(btnMinimize);
             Controls.Add(btnInfo);
             Controls.Add(pictureBox1);
             Controls.Add(label4);
@@ -249,5 +265,6 @@
         private ComboBox cmbBufferSize;
         private PictureBox pictureBox1;
         private PictureBox btnInfo;
+        private Label btnMinimize;
     }
 }
