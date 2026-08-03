@@ -1,21 +1,16 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Diagnostics;
 
 namespace SecureFileShredder
 {
     public partial class About : Form
     {
+
+        private const string AppVersion = "1.7";
+
         public About()
         {
             InitializeComponent();
+            lblVersion.Text = $"Version {AppVersion}";
         }
 
         private void btnClose_Click(object sender, EventArgs e)
@@ -44,6 +39,11 @@ namespace SecureFileShredder
         private void btnLink_Click(object sender, EventArgs e)
         {
             Process.Start(new ProcessStartInfo("https://www.softasium.com") { UseShellExecute = true });
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

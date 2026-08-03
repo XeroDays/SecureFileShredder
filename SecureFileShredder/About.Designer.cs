@@ -32,7 +32,7 @@
             label1 = new Label();
             label2 = new Label();
             btnClose = new PictureBox();
-            label3 = new Label();
+            lblVersion = new Label();
             label4 = new Label();
             label5 = new Label();
             btnLink = new Label();
@@ -89,17 +89,18 @@
             btnClose.TabStop = false;
             btnClose.Click += btnClose_Click;
             // 
-            // label3
+            // lblVersion
             // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Calibri", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label3.ForeColor = Color.DimGray;
-            label3.Location = new Point(113, 74);
-            label3.Name = "label3";
-            label3.Size = new Size(88, 21);
-            label3.TabIndex = 15;
-            label3.Text = "Version 1.5";
-            label3.MouseDown += Form1_MouseDown;
+            lblVersion.AutoSize = true;
+            lblVersion.Font = new Font("Calibri", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblVersion.ForeColor = Color.DimGray;
+            lblVersion.Location = new Point(113, 74);
+            lblVersion.Name = "lblVersion";
+            lblVersion.Size = new Size(170, 21);
+            lblVersion.TabIndex = 15;
+            lblVersion.Text = "Version {version.name}";
+            lblVersion.Click += label3_Click;
+            lblVersion.MouseDown += Form1_MouseDown;
             // 
             // label4
             // 
@@ -148,7 +149,7 @@
             Controls.Add(label5);
             Controls.Add(label4);
             Controls.Add(pictureBox1);
-            Controls.Add(label3);
+            Controls.Add(lblVersion);
             Controls.Add(btnClose);
             Controls.Add(label2);
             Controls.Add(label1);
@@ -169,7 +170,7 @@
         private Label label1;
         private Label label2;
         private PictureBox btnClose;
-        private Label label3;
+        private Label lblVersion;
         private Label label4;
         private Label label5;
         private Label btnLink;
