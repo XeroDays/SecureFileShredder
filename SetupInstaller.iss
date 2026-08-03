@@ -41,6 +41,7 @@ Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.runtim
 Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.deps.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "SecureFileShredder\bin\Release\net8.0-windows\Logo.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "SecureFileShredder\bin\Release\net8.0-windows\Assets\*"; DestDir: "{app}\Assets"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Registry]
 ; File association for .exe files (optional)

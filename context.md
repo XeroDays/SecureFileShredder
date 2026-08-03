@@ -163,14 +163,14 @@ Workflow: Worker completes → delete only succeeded paths → delete `listOfDir
 Purpose: Windows context menu **"Shred Securely"** for files (`*`) and folders (`Directory`).
 
 Entry Points:
-- [SetupInstaller.iss](SetupInstaller.iss) — `[Registry]` (menu label, icon, command) and `[Files]` (`Logo.ico`)
+- [SetupInstaller.iss](SetupInstaller.iss) — `[Registry]` (menu label, icon, command) and `[Files]` (`Logo.ico`, recursive `Assets\`)
 
 Primary Files:
 - [SetupInstaller.iss](SetupInstaller.iss)
 
 Related Files:
 - [SecureFileShredder/Logo.ico](SecureFileShredder/Logo.ico) — context-menu icon source
-- [SecureFileShredder/SecureFileShredder.csproj](SecureFileShredder/SecureFileShredder.csproj) — `CopyToOutputDirectory` for `Logo.ico`
+- [SecureFileShredder/SecureFileShredder.csproj](SecureFileShredder/SecureFileShredder.csproj) — `CopyToOutputDirectory` for `Logo.ico` and `Assets\**\*`
 - [.github/workflows/build.yml](.github/workflows/build.yml)
 - [SecureFileShredder/Program.cs](SecureFileShredder/Program.cs)
 
@@ -181,7 +181,7 @@ Configuration (all in `SetupInstaller.iss`):
 - Menu icon: `Icon` = `{app}\Logo.ico` (installed via `[Files]` from Release output)
 - Command: `SecureFileShredder.exe "%1"` → [Program.cs](SecureFileShredder/Program.cs) `args` → [Mainmenu.cs](SecureFileShredder/Mainmenu.cs) queue
 
-Workflow: Install → registry + `Logo.ico` in app dir → Explorer context menu → exe with path → Program/Mainmenu queue flow
+Workflow: Install → registry + `Logo.ico` + `Assets\` (tray badges) in app dir → Explorer context menu → exe with path → Program/Mainmenu queue flow
 
 ---
 
@@ -383,7 +383,7 @@ Files:
 | Generated resource accessor | [SecureFileShredder/Properties/Resources.Designer.cs](SecureFileShredder/Properties/Resources.Designer.cs) |
 | Source image files | `SecureFileShredder/Resources/` — `LogoPng.png`, `icons8-close-50.png`, `icons8-information-100.png`, `information.png` |
 | App icon + shell context-menu icon | [SecureFileShredder/Logo.ico](SecureFileShredder/Logo.ico) (`.csproj` + installer `[Files]`) |
-| Tray progress badge icons (1–100%) | [SecureFileShredder/Assets/TaskbarIcon/](SecureFileShredder/Assets/TaskbarIcon/) (`pct_001.ico`–`pct_100.ico`) |
+| Tray progress badge icons (1–100%) | [SecureFileShredder/Assets/TaskbarIcon/](SecureFileShredder/Assets/TaskbarIcon/) (`pct_001.ico`–`pct_100.ico`; copied to output + installer `{app}\Assets`) |
 | Regenerate tray badge icons | [SecureFileShredder/Sandbox/GenerateTaskbarIcons.ps1](SecureFileShredder/Sandbox/GenerateTaskbarIcons.ps1) |
 | Windows installer, registry, `MyAppVersion` 1.5 | [SetupInstaller.iss](SetupInstaller.iss) |
 | Release CI/CD | [.github/workflows/build.yml](.github/workflows/build.yml) |
@@ -548,7 +548,7 @@ May impact: Single-instance behavior, context-menu multi-launch, second-instance
 
 Changing: [SetupInstaller.iss](SetupInstaller.iss)
 
-May impact: Shell context menu label/icon/command, `MyAppVersion`, install paths, bundled files (`Logo.ico`), optional file association
+May impact: Shell context menu label/icon/command, `MyAppVersion`, install paths, bundled files (`Logo.ico`, `Assets\`), optional file association
 
 ---
 
