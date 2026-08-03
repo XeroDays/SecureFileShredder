@@ -1,7 +1,6 @@
-
 # Secure File Shredder
 
-**Version 1.5** — A Windows desktop application for securely deleting sensitive files and folders beyond recovery.
+**Version 1.7** — A Windows desktop application for securely deleting sensitive files and folders beyond recovery.
 
 ## Overview
 
@@ -23,7 +22,10 @@ The tool supports multiple overwrite passes and configurable buffer sizes. It is
 - **Configurable overwrite passes**: Choose from presets (1, 3, 7, 12, 35, or 55 passes) labeled after common standards (e.g. DoD, Gutmann); each pass uses cryptographically random data.
 - **Configurable buffer size**: Tune read/write chunk size from 1 KB up to 512 KB (default 4 KB) for performance tuning on large files.
 - **Progress monitoring**: Progress bar with background processing so the UI stays responsive.
-- **Cancellation**: Stop an in-progress shred from the close control.
+- **Stop shredding**: The start button becomes **Stop Shredding** while a job runs; use it to cancel the operation.
+- **Minimize to tray**: While shredding, minimize to the system tray; the tray icon shows live progress percentage.
+- **Close after finish**: The close button is hidden during shredding; when the job ends, confirm the result message, then close the app when you are ready.
+- **Locked files**: Files that cannot be shredded (for example in use) are skipped; the rest of the batch continues and failed items stay in the queue.
 - **Single-instance behavior**: Opening the app again (e.g. from the context menu while it is already running) sends new paths to the existing window instead of starting a second copy.
 - **About dialog**: Product information and version from the info button on the main window.
 - **Windows installer**: Inno Setup package for install, uninstall, and shell integration; release builds are published via GitHub Actions when a release is published.
@@ -32,7 +34,7 @@ The tool supports multiple overwrite passes and configurable buffer sizes. It is
 
 1. **Queue**: Files (and folder contents) are collected into a shred queue via drag-and-drop, the context menu, or launching the app with paths.
 2. **Overwrite**: Each file is overwritten multiple times with random bytes from a cryptographically secure generator; you choose how many passes to apply.
-3. **Delete**: After overwriting, files are deleted from disk; dragged root folders are removed when applicable.
+3. **Delete**: After overwriting, successfully shredded files are deleted from disk; dragged root folders are removed when applicable.
 4. **Feedback**: Progress is shown during the operation; success, cancel, and error states are reported in dialogs.
 
 Pass preset names (DoD, NSA, Gutmann, etc.) indicate how many overwrite rounds run; the same secure random-byte method is used for every pass.
@@ -55,28 +57,30 @@ Pass preset names (DoD, NSA, Gutmann, etc.) indicate how many overwrite rounds r
 1. Add items by **dragging and dropping** onto the window, using **Shred Securely** in Explorer, or opening the app with paths already supplied.
 2. Select **overwrite passes** and **buffer size** if you want something other than the defaults.
 3. Click **Start Shredding to bits** and confirm when prompted.
-4. Watch the **progress bar**; use the close control to **cancel** if needed.
-5. When finished, a confirmation message appears and the queue is cleared.
+4. Watch the **progress bar**. To cancel, click **Stop Shredding**. To keep working elsewhere, **minimize** to the system tray (progress % shows on the tray icon).
+5. When finished, a confirmation message appears. Click **Close** when you want to exit the app.
 
 ## Project Structure
 
 | Area | Role |
 |------|------|
-| `Mainmenu` | Main UI, file queue, shred settings, background worker, deletion |
+| `Mainmenu` | Main UI, file queue, shred settings, background worker, tray, deletion |
 | `About` | About / version dialog |
 | `Controllers/ShredderController` | Secure multi-pass file overwrite |
+| `Assets/TaskbarIcon` | Tray progress badge icons (`1%`–`100%`) |
 | `Program` | Application entry, single-instance mutex, inter-process file handoff |
 | `SetupInstaller.iss` | Windows installer, context menu registry, bundled `Logo.ico` |
 | `.github/workflows/build.yml` | Release build, zip, Inno Setup, upload to GitHub Releases |
 | `ChangeLog.txt` | Release history notes |
 
-## Release Notes (1.5)
+## Release Notes (1.7)
 
 Current release highlights:
 
-- Version **1.5** across installer and About dialog
-- Context menu icon updated to **Logo.ico** (aligned with application branding)
-- Continued support for multi-pass shredding, folder queues, and shell **Shred Securely** integration
+- Minimize to tray while shredding with live % on tray icon
+- Close button hidden during shred; app stays open until user closes
+- Start button becomes **Stop Shredding** to cancel the job
+- Hint label hides while running and shows again when done
 
 Earlier versions introduced the installer, GitHub release workflow, context menu, folder deletion, shredder controller, pass/buffer presets, and UI refinements — see `SecureFileShredder/ChangeLog.txt` for full history.
 
@@ -84,14 +88,13 @@ Earlier versions introduced the installer, GitHub release workflow, context menu
 
 Possible improvements:
 
-1. Shredding files that are locked or in use by other processes
-2. Metadata wiping (timestamps, alternate streams)
-3. Multi-threaded shredding for faster batch jobs
-4. Optional password protection before shredding
-5. Shredding profiles to save favorite pass/buffer settings
-6. File-type filters (e.g. only documents)
-7. Detailed audit log of shredded items
-8. Assembly / release version synced automatically from Git tags
+1. Metadata wiping (timestamps, alternate streams)
+2. Multi-threaded shredding for faster batch jobs
+3. Optional password protection before shredding
+4. Shredding profiles to save favorite pass/buffer settings
+5. File-type filters (e.g. only documents)
+6. Detailed audit log of shredded items
+7. Assembly / release / installer version synced automatically from Git tags
 
 ## Disclaimer
 
@@ -103,4 +106,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE.txt) f
 
 ## Contributions
 
-Contributions are welcome. Open an issue or submit a pull request with improvements or bug fixes.
+Contributions are welcome. Open an issue or submit a pull request with improvements or bug fixes. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
