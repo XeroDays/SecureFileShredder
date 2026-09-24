@@ -6,12 +6,10 @@ namespace SecureFileShredder
     public partial class About : Form
     {
 
-        private const string AppVersion = "1.8";
-
         public About()
         {
             InitializeComponent();
-            lblVersion.Text = $"Version {AppVersion}";
+            lblVersion.Text = $"Version {Application.ProductVersion}";
         }
 
         public void ApplyTheme(ThemePalette theme)

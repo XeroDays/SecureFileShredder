@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <!-- Single product version. About and the installer read this from the built executable. -->
+    <Version>1.8.0</Version>
+    <AssemblyVersion>1.8.0.0</AssemblyVersion>
+    <FileVersion>1.8.0.0</FileVersion>
+    <InformationalVersion>1.8</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+</Project>

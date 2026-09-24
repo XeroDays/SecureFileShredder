@@ -394,7 +394,8 @@ Files:
 | App icon + shell context-menu icon | [SecureFileShredder/Logo.ico](SecureFileShredder/Logo.ico) (`.csproj` + installer `[Files]`) |
 | Tray progress badge icons (1–100%) | [SecureFileShredder/Assets/TaskbarIcon/](SecureFileShredder/Assets/TaskbarIcon/) (`pct_001.ico`–`pct_100.ico`; copied to output + installer `{app}\Assets`) |
 | Regenerate tray badge icons | [SecureFileShredder/Sandbox/GenerateTaskbarIcons.ps1](SecureFileShredder/Sandbox/GenerateTaskbarIcons.ps1) |
-| Windows installer, registry, `MyAppVersion` 1.5 | [SetupInstaller.iss](SetupInstaller.iss) |
+| Product version (single source) | [Directory.Build.props](Directory.Build.props) |
+| Windows installer, registry; version from built EXE | [SetupInstaller.iss](SetupInstaller.iss) |
 | Release CI/CD | [.github/workflows/build.yml](.github/workflows/build.yml) |
 | Version history | [SecureFileShredder/ChangeLog.txt](SecureFileShredder/ChangeLog.txt) |
 | AI context index | [context.md](context.md) |
@@ -590,8 +591,9 @@ May impact: Target framework, output type, icon, content copy rules
 - **Tray**: `NotifyIcon` visible only while minimized during shred; tooltip percentage from `progressBar` value/max; live badge icons in `Assets/TaskbarIcon/pct_001.ico`–`pct_100.ico` (copied to output)
 - **Bitmap resources**: `LogoPng`, `icons8_close_50`, `icons8_information_100` (plus legacy `icons8_close_48`, `information`)
 - **Application icon**: `Logo.ico` in `.csproj` (`ApplicationIcon`, `CopyToOutputDirectory`); same file used for Explorer context-menu icon via installer `Icon` registry value
-- **Installer version** (`MyAppVersion` in [SetupInstaller.iss](SetupInstaller.iss)): 1.8 — keep it aligned with `About.AppVersion`
-- **About UI version label**: `Version 1.8` from `About.AppVersion`
+- **Product version**: [Directory.Build.props](Directory.Build.props) — `InformationalVersion` 1.8 (About label and installer `AppVersion`); `FileVersion` / `AssemblyVersion` 1.8.0.0. Bump only this file.
+- **About UI version label**: `Version` plus `Application.ProductVersion`
+- **Installer version**: `MyAppVersion` in [SetupInstaller.iss](SetupInstaller.iss) is `ProductVersion` from the Release EXE
 - Combo items encode numeric values; parsed via `Split` on shred start
 - Progress max during overwrite: `fileCount * passes`
 - Progress during deletion: `listofPaths.Count` (separate phase)

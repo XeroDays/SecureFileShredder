@@ -2,7 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Secure Shredder"
-#define MyAppVersion "1.8"
+#define MyAppExePath "SecureFileShredder\bin\Release\net8.0-windows\SecureFileShredder.exe"
+#define MyAppVersion GetStringFileInfo(MyAppExePath, "ProductVersion")
 #define MyAppPublisher "Softasium Software Solutions"
 #define MyAppURL "https://www.softasium.com"
 #define MyAppExeName "SecureFileShredder.exe"
