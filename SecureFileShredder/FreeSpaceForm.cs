@@ -4,67 +4,48 @@ using SecureFileShredder.Theming;
 
 namespace SecureFileShredder;
 
-public sealed class FreeSpaceForm : Form
+public partial class FreeSpaceForm : Form
 {
     private readonly ShredJobOptions options;
-    private readonly ComboBox drives = new() { DropDownStyle = ComboBoxStyle.DropDownList };
-    private readonly Label details = new() { AutoSize = false };
-    private readonly Label status = new() { AutoSize = false };
-    private readonly Controls.ShredProgressBar bar = new();
-    private readonly Button start = new() { Text = "Wipe free space" };
     private CancellationTokenSource? cancellation;
     private bool running;
 
     public FreeSpaceForm(ShredJobOptions options, bool dark)
     {
         this.options = options;
-        Text = "Free space wipe";
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        StartPosition = FormStartPosition.CenterParent;
-        MaximizeBox = false;
-        MinimizeBox = false;
-        ClientSize = new Size(520, 280);
-        Font = new Font("Segoe UI", 9f);
-        var title = new Label
-        {
-            Text = "Fill free space, overwrite it, then delete the temporary file. 256 MB is left free.",
-            Location = new Point(16, 16),
-            Size = new Size(488, 40)
-        };
-        drives.Location = new Point(16, 68);
-        drives.Width = 488;
-        details.Location = new Point(16, 104);
-        details.Size = new Size(488, 40);
-        bar.Location = new Point(16, 156);
-        bar.Size = new Size(488, 16);
-        status.Location = new Point(16, 180);
-        status.Size = new Size(488, 36);
-        start.Location = new Point(250, 230);
-        start.Size = new Size(140, 32);
-        var close = new Button { Text = "Close", Location = new Point(400, 230), Size = new Size(104, 32) };
-        drives.SelectedIndexChanged += (_, _) => ShowDrive();
-        start.Click += async (_, _) => await StartWipeAsync();
-        close.Click += (_, _) =>
-        {
-            if (running)
-            {
-                cancellation?.Cancel();
-                return;
-            }
-
-            Close();
-        };
-        FormClosing += (_, args) =>
-        {
-            if (running)
-            {
-                args.Cancel = true;
-                cancellation?.Cancel();
-            }
-        };
-        Controls.AddRange(new Control[] { title, drives, details, bar, status, start, close });
+        InitializeComponent();
         LoadDrives();
         ThemePalette.Apply(this, ThemePalette.For(dark));
+    }
+
+    private void drives_SelectedIndexChanged(object? sender, EventArgs e)
+    {
+        ShowDrive();
+    }
+
+    private async void btnStart_Click(object? sender, EventArgs e)
+    {
+        await StartWipeAsync();
+    }
+
+    private void btnClose_Click(object? sender, EventArgs e)
+    {
+        if (running)
+        {
+            cancellation?.Cancel();
+            return;
+        }
+
+        Close();
+    }
+
+    private void FreeSpaceForm_FormClosing(object? sender, FormClosingEventArgs e)
+    {
+        if (running)
+        {
+            e.Cancel = true;
+            cancellation?.Cancel();
+        }
     }
 
     private void LoadDrives()
@@ -83,7 +64,7 @@ public sealed class FreeSpaceForm : Form
         else
         {
             details.Text = "No ready drives were found.";
-            start.Enabled = false;
+            btnStart.Enabled = false;
         }
     }
 
@@ -98,7 +79,7 @@ public sealed class FreeSpaceForm : Form
         long planned = FreeSpaceWiper.PlannedBytes(current.AvailableFreeSpace, FreeSpaceWiper.ReservedMarginBytes);
         details.Text = current.Name + "  " + current.DriveFormat + "  free " + ByteFormat.Format(current.AvailableFreeSpace)
             + "\r\nThis wipe would write about " + ByteFormat.Format(planned) + " using " + options.Patterns.Count + " pass(es).";
-        start.Enabled = planned > 0 && !running;
+        btnStart.Enabled = planned > 0 && !running;
     }
 
     private async Task StartWipeAsync()
@@ -122,7 +103,7 @@ public sealed class FreeSpaceForm : Form
         }
 
         running = true;
-        start.Enabled = false;
+        btnStart.Enabled = false;
         drives.Enabled = false;
         cancellation = new CancellationTokenSource();
         var progress = new Progress<FreeSpaceProgress>(update =>
