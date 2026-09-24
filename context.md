@@ -14,7 +14,7 @@
 | Language | C# |
 | Database | None |
 | External services | None (local OS APIs only) |
-| Deployment | Inno Setup installer; GitHub Release CI on `release: published` |
+| Deployment | Inno Setup installer; GitHub Release CI on push to `main` or `master` when `<Version>` differs from the latest release |
 | Solution | [SecureFileShredder.sln](SecureFileShredder.sln) — single project |
 | Repo metadata | [.gitignore](.gitignore), [.gitattributes](.gitattributes) |
 
@@ -355,9 +355,9 @@ Files:
 
 ### Release Build and Publish
 
-Trigger: GitHub release `published` event.
+Trigger: Push to `main` or `master`.
 
-Flow: Checkout → NuGet restore → MSBuild Release → zip artifacts → Inno Setup compile → upload installer to release
+Flow: Read `<Version>` from [Directory.Build.props](Directory.Build.props) → compare with the latest GitHub release tag (optional leading `v` ignored) → stop when they match → otherwise NuGet restore → MSBuild Release → zip artifacts → Inno Setup compile → create a release named with that version and attach the installer. Skip publish when that exact tag already exists.
 
 Files:
 - [.github/workflows/build.yml](.github/workflows/build.yml)
@@ -435,10 +435,11 @@ Second process (context menu / CLI)
 ### Release pipeline
 
 ```
-GitHub release published
-  → build.yml (MSBuild Release)
+Push to main or master
+  → compare Directory.Build.props <Version> with latest release tag
+  → build.yml (MSBuild Release) only on mismatch
   → SetupInstaller.iss (Inno Setup)
-  → GitHub release asset upload
+  → create GitHub release named with that version
 ```
 
 ---
@@ -495,13 +496,13 @@ Entry Points: CI `iscc` step; local compile of `SetupInstaller.iss`
 
 ### GitHub Releases
 
-Purpose: Attach compiled installer to published releases.
+Purpose: Create a GitHub release from `<Version>` in [Directory.Build.props](Directory.Build.props) and attach the compiled installer when that version differs from the latest release.
 
-Files: [.github/workflows/build.yml](.github/workflows/build.yml)
+Files: [.github/workflows/build.yml](.github/workflows/build.yml), [Directory.Build.props](Directory.Build.props)
 
-Authentication: `secrets.RELEASE_TOKEN` for `softprops/action-gh-release`
+Authentication: `secrets.RELEASE_TOKEN` for `gh release view` and `softprops/action-gh-release`
 
-Entry Points: Workflow on `release: types: [published]`
+Entry Points: Workflow on `push` to `main` or `master`
 
 ---
 
@@ -567,7 +568,7 @@ May impact: Shell context menu label/icon/command, `MyAppVersion`, install paths
 
 Changing: [.github/workflows/build.yml](.github/workflows/build.yml)
 
-May impact: Release artifacts only (no PR/push CI)
+May impact: Release creation on push to `main` or `master` when `<Version>` differs from the latest GitHub release
 
 ---
 

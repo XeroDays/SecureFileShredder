@@ -1,8 +1,11 @@
 name: Create Release Pipeline
 
-on:  
-  release:
-    types: [published]
+on:
+  push:
+    branches: [master, main]
+
+permissions:
+  contents: write
 
 env:
   PROJECT_NAME: SecureFileShredder                 # Change this to your project name
@@ -21,41 +24,95 @@ jobs:
       - name: ⛓️ Checkout code
         uses: actions/checkout@v3
 
+      - name: Compare project version with latest release
+        id: version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          [xml]$props = Get-Content -Path Directory.Build.props
+          $version = ([string]$props.Project.PropertyGroup.Version).Trim()
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "Directory.Build.props is missing <Version>."
+          }
+
+          $latest = ""
+          $latestJson = gh release view --json tagName 2>$null
+          if ($LASTEXITCODE -eq 0 -and $latestJson) {
+            $latest = ([string]($latestJson | ConvertFrom-Json).tagName).Trim()
+          }
+
+          $normalize = { param($value) if ([string]::IsNullOrWhiteSpace($value)) { return "" }; return ($value -replace '^v','') }
+          $projectNorm = & $normalize $version
+          $latestNorm = & $normalize $latest
+
+          $tagExists = $false
+          gh release view $version --json tagName 1>$null 2>$null
+          if ($LASTEXITCODE -eq 0) { $tagExists = $true }
+
+          $shouldRelease = $projectNorm -ne $latestNorm
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "should_release=$($shouldRelease.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+          "tag_exists=$($tagExists.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+
+          if ($shouldRelease) {
+            Write-Host "Version $version differs from latest release '$latest'. Continuing."
+          } else {
+            Write-Host "Version $version matches latest release '$latest'. Skipping build and publish."
+          }
+          if ($tagExists) {
+            Write-Host "Release tag $version already exists. Publish will be skipped."
+          }
+
+          $global:LASTEXITCODE = 0
+          exit 0
+
       - name: 🛠️ Setup .NET Framework
+        if: steps.version.outputs.should_release == 'true'
         uses: microsoft/setup-msbuild@v1
 
       - name: 📦 Restore NuGet packages
+        if: steps.version.outputs.should_release == 'true'
         run: nuget restore
 
       - name: 🚀 Build the project
+        if: steps.version.outputs.should_release == 'true'
         run: msbuild ${{ env.SOLUTION_FILE }} /p:Configuration=Release
 
       - name: 🗜️ Zip the build folder
+        if: steps.version.outputs.should_release == 'true'
         run: |
           powershell Compress-Archive -Path ${{ env.BUILD_PATH }}\* -DestinationPath ${{ env.BUILD_PATH }}\${{ env.ZIP_NAME }}
 
       - name: 📤 Upload build artifacts
+        if: steps.version.outputs.should_release == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: build
           path: ${{ env.BUILD_PATH }}/${{ env.ZIP_NAME }}
 
       - name: ⬇️ Download build artifacts
+        if: steps.version.outputs.should_release == 'true'
         uses: actions/download-artifact@v4
         with:
           name: build
 
       - name: Install Inno Setup
+        if: steps.version.outputs.should_release == 'true'
         run: |
           choco install innosetup --yes
 
       - name: 🚀 Compile Installer using Inno Setup
+        if: steps.version.outputs.should_release == 'true'
         run: |
           iscc ${{ env.ISS_FILE }}
 
-      - name: 📤 Upload installer to GitHub release
+      - name: 📤 Create GitHub release
+        if: steps.version.outputs.should_release == 'true' && steps.version.outputs.tag_exists != 'true'
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
           files: ${{ env.INSTALLER_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
