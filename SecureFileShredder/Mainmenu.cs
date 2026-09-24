@@ -33,18 +33,6 @@ namespace SecureFileShredder
         private Icon? trayBaseIcon;
         private bool isMinimizedToTray;
         private int lastTrayPercent = -1;
-        private Button btnAddFiles = null!;
-        private Button btnAddFolder = null!;
-        private Button btnRemove = null!;
-        private Button btnClear = null!;
-        private Button btnSettings = null!;
-        private Button btnHistory = null!;
-        private Button btnFreeSpace = null!;
-        private Label lblSummary = null!;
-        private Label lblStatus = null!;
-        private Label lblMetrics = null!;
-        private Label lblResult = null!;
-        private ShredProgressBar shredBar = null!;
         private System.Windows.Forms.Timer fadeTimer = null!;
         private System.Windows.Forms.Timer pulseTimer = null!;
         private System.Windows.Forms.Timer rowFadeTimer = null!;
@@ -64,20 +52,15 @@ namespace SecureFileShredder
         {
             InitializeComponent();
             settings = AppSettingsStore.Load();
-            BuildExtraUi();
+            WireUi();
             KeyPreview = true;
             KeyDown += Mainmenu_KeyDown;
             FormClosing += Mainmenu_FormClosing;
-            Resize += (_, _) => LayoutChrome();
-            listBoxFiles.AllowDrop = true;
-            progressBar.Visible = false;
-            label2.Visible = false;
             SetupCombos();
             ApplySavedWindow();
             ApplyTheme();
             InitializeNotifyIcon();
             InitializeTimers();
-            LayoutChrome();
             if (args is { Length: > 0 })
             {
                 AddPaths(args);
@@ -91,12 +74,6 @@ namespace SecureFileShredder
         {
             base.OnShown(e);
             fadeTimer.Start();
-        }
-
-        protected override void OnDpiChanged(DpiChangedEventArgs e)
-        {
-            base.OnDpiChanged(e);
-            LayoutChrome();
         }
 
         protected override void OnResizeEnd(EventArgs e)
@@ -147,20 +124,8 @@ namespace SecureFileShredder
 
         private int Scale(int pixels) => (int)(pixels * DeviceDpi / 96f);
 
-        private void BuildExtraUi()
+        private void WireUi()
         {
-            btnAddFiles = MakeButton("Add files", "btnAddFiles");
-            btnAddFolder = MakeButton("Add folder", "btnAddFolder");
-            btnRemove = MakeButton("Remove", "btnRemove");
-            btnClear = MakeButton("Clear", "btnClear");
-            btnSettings = MakeButton("Settings", "btnSettings");
-            btnHistory = MakeButton("History", "btnHistory");
-            btnFreeSpace = MakeButton("Free space", "btnFreeSpace");
-            lblSummary = MakeLabel("lblSummary");
-            lblStatus = MakeLabel("lblStatus");
-            lblMetrics = MakeLabel("lblMetrics");
-            lblResult = MakeLabel("lblResult");
-            shredBar = new ShredProgressBar { Name = "shredBar", Visible = false };
             btnAddFiles.Click += (_, _) => BrowseFiles();
             btnAddFolder.Click += (_, _) => BrowseFolder();
             btnRemove.Click += (_, _) => RemoveSelected();
@@ -168,85 +133,8 @@ namespace SecureFileShredder
             btnSettings.Click += (_, _) => OpenSettings();
             btnHistory.Click += (_, _) => OpenHistory();
             btnFreeSpace.Click += (_, _) => OpenFreeSpace();
-            Controls.AddRange(new Control[]
-            {
-                btnAddFiles, btnAddFolder, btnRemove, btnClear, btnSettings, btnHistory, btnFreeSpace,
-                lblSummary, lblStatus, lblMetrics, lblResult, shredBar
-            });
-            AllowDrop = true;
-            listBoxFiles.AllowDrop = true;
             DragLeave += (_, _) => DragLeaveClient();
             listBoxFiles.DragLeave += (_, _) => DragLeaveClient();
-        }
-
-        private Button MakeButton(string text, string name) => new()
-        {
-            Text = text,
-            Name = name,
-            Font = Font,
-            FlatStyle = FlatStyle.Flat
-        };
-
-        private Label MakeLabel(string name) => new()
-        {
-            Name = name,
-            AutoSize = false,
-            Font = Font
-        };
-
-        private void LayoutChrome()
-        {
-            if (btnAddFiles == null)
-            {
-                return;
-            }
-
-            int margin = Scale(12);
-            int width = ClientSize.Width;
-            int height = ClientSize.Height;
-            int right = width - margin;
-            btnClose.SetBounds(right - Scale(30), Scale(11), Scale(30), Scale(30));
-            btnMinimize.SetBounds(right - Scale(66), Scale(11), Scale(30), Scale(30));
-            btnInfo.SetBounds(right - Scale(102), Scale(11), Scale(30), Scale(30));
-
-            int y = Scale(56);
-            int x = margin;
-            Place(btnAddFiles, ref x, y, 100, 30);
-            Place(btnAddFolder, ref x, y, 104, 30);
-            Place(btnRemove, ref x, y, 84, 30);
-            Place(btnClear, ref x, y, 72, 30);
-            btnFreeSpace.SetBounds(right - Scale(120), y, Scale(120), Scale(30));
-            btnHistory.SetBounds(right - Scale(210), y, Scale(84), Scale(30));
-            btnSettings.SetBounds(right - Scale(304), y, Scale(88), Scale(30));
-
-            int listTop = Scale(96);
-            int bottom = Scale(196);
-            listBoxFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            listBoxFiles.SetBounds(margin, listTop, Math.Max(Scale(200), width - margin * 2), Math.Max(Scale(80), height - listTop - bottom));
-
-            int row = listBoxFiles.Bottom + Scale(8);
-            lblSummary.SetBounds(margin, row, width / 2, Scale(22));
-            lblStatus.SetBounds(width / 2, row, width / 2 - margin, Scale(22));
-            row += Scale(26);
-            label3.SetBounds(margin, row, Scale(110), Scale(28));
-            cmbPasses.SetBounds(margin + Scale(114), row, Scale(230), Scale(28));
-            btnStartDeleting.SetBounds(right - Scale(230), row, Scale(230), Scale(64));
-            row += Scale(36);
-            label4.SetBounds(margin, row, Scale(110), Scale(28));
-            cmbBufferSize.SetBounds(margin + Scale(114), row, Scale(230), Scale(28));
-            row += Scale(40);
-            shredBar.SetBounds(margin, row, Math.Max(Scale(80), width - margin * 2), Scale(14));
-            row += Scale(18);
-            lblMetrics.SetBounds(margin, row, width - margin * 2, Scale(20));
-            row += Scale(22);
-            lblResult.SetBounds(margin, row, width - margin * 2, Scale(40));
-            MinimumSize = new Size(Scale(880), Scale(600));
-        }
-
-        private void Place(Control control, ref int x, int y, int width, int height)
-        {
-            control.SetBounds(x, y, Scale(width), Scale(height));
-            x += Scale(width + 6);
         }
 
         private void SetupCombos()
@@ -302,7 +190,6 @@ namespace SecureFileShredder
         {
             if (settings.WindowWidth < 400 || settings.WindowHeight < 300)
             {
-                ClientSize = new Size(Scale(900), Scale(640));
                 return;
             }
 
