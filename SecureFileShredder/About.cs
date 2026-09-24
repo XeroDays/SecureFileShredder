@@ -1,16 +1,28 @@
 ﻿using System.Diagnostics;
+using SecureFileShredder.Theming;
 
 namespace SecureFileShredder
 {
     public partial class About : Form
     {
 
-        private const string AppVersion = "1.7";
+        private const string AppVersion = "1.8";
 
         public About()
         {
             InitializeComponent();
             lblVersion.Text = $"Version {AppVersion}";
+        }
+
+        public void ApplyTheme(ThemePalette theme)
+        {
+            BackColor = theme.FormBack;
+            label1.ForeColor = theme.Accent;
+            label2.ForeColor = theme.Text;
+            lblVersion.ForeColor = theme.Muted;
+            label4.ForeColor = theme.Muted;
+            label5.ForeColor = theme.Text;
+            btnLink.ForeColor = theme.Link;
         }
 
         private void btnClose_Click(object sender, EventArgs e)

@@ -31,8 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Mainmenu));
             label1 = new Label();
             btnClose = new PictureBox();
-            fileSystemWatcher1 = new FileSystemWatcher();
-            listBoxFiles = new ListBox();
+            listBoxFiles = new SecureFileShredder.Controls.FileQueueList();
             btnStartDeleting = new Button();
             label2 = new Label();
             progressBar = new ProgressBar();
@@ -45,7 +44,6 @@
             btnInfo = new PictureBox();
             btnMinimize = new Label();
             ((System.ComponentModel.ISupportInitialize)btnClose).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)btnInfo).BeginInit();
             SuspendLayout();
@@ -75,24 +73,28 @@
             btnClose.TabStop = false;
             btnClose.Click += btnClose_Click;
             // 
-            // fileSystemWatcher1
-            // 
-            fileSystemWatcher1.EnableRaisingEvents = true;
-            fileSystemWatcher1.SynchronizingObject = this;
-            // 
             // listBoxFiles
             // 
+            listBoxFiles.ActiveBack = Color.FromArgb(255, 228, 225);
             listBoxFiles.AllowDrop = true;
             listBoxFiles.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            listBoxFiles.BorderStyle = BorderStyle.FixedSingle;
+            listBoxFiles.DragActive = false;
+            listBoxFiles.DragBack = Color.FromArgb(255, 236, 232);
+            listBoxFiles.DragBorder = Color.Maroon;
+            listBoxFiles.DrawMode = DrawMode.OwnerDrawFixed;
             listBoxFiles.FormattingEnabled = true;
+            listBoxFiles.IntegralHeight = false;
+            listBoxFiles.ItemHeight = 22;
             listBoxFiles.Location = new Point(11, 60);
             listBoxFiles.Margin = new Padding(3, 4, 3, 4);
             listBoxFiles.Name = "listBoxFiles";
-            listBoxFiles.Size = new Size(596, 284);
+            listBoxFiles.NormalBack = Color.White;
+            listBoxFiles.NormalText = Color.Black;
+            listBoxFiles.Size = new Size(877, 284);
             listBoxFiles.TabIndex = 2;
             listBoxFiles.DragDrop += listBox1_DragDrop;
             listBoxFiles.DragEnter += Form1_DragEnter;
-            listBoxFiles.MouseDown += Form1_MouseDown;
             // 
             // btnStartDeleting
             // 
@@ -102,7 +104,7 @@
             btnStartDeleting.FlatStyle = FlatStyle.Flat;
             btnStartDeleting.Font = new Font("Bahnschrift SemiBold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnStartDeleting.ForeColor = Color.White;
-            btnStartDeleting.Location = new Point(401, 376);
+            btnStartDeleting.Location = new Point(682, 376);
             btnStartDeleting.Margin = new Padding(3, 4, 3, 4);
             btnStartDeleting.Name = "btnStartDeleting";
             btnStartDeleting.Size = new Size(206, 45);
@@ -116,7 +118,7 @@
             label2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label2.AutoSize = true;
             label2.ForeColor = Color.Gray;
-            label2.Location = new Point(354, 348);
+            label2.Location = new Point(635, 348);
             label2.Name = "label2";
             label2.Size = new Size(253, 20);
             label2.TabIndex = 4;
@@ -128,7 +130,7 @@
             progressBar.Location = new Point(14, 435);
             progressBar.Margin = new Padding(3, 4, 3, 4);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(590, 13);
+            progressBar.Size = new Size(874, 13);
             progressBar.TabIndex = 5;
             // 
             // cmbPasses
@@ -218,7 +220,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(224, 224, 224);
-            ClientSize = new Size(619, 464);
+            ClientSize = new Size(900, 462);
             Controls.Add(btnMinimize);
             Controls.Add(btnInfo);
             Controls.Add(pictureBox1);
@@ -242,7 +244,6 @@
             DragEnter += Form1_DragEnter;
             MouseDown += Form1_MouseDown;
             ((System.ComponentModel.ISupportInitialize)btnClose).EndInit();
-            ((System.ComponentModel.ISupportInitialize)fileSystemWatcher1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)btnInfo).EndInit();
             ResumeLayout(false);
@@ -253,10 +254,9 @@
 
         private Label label1;
         private PictureBox btnClose;
-        private FileSystemWatcher fileSystemWatcher1;
         private Label label2;
         private Button btnStartDeleting;
-        private ListBox listBoxFiles;
+        private Controls.FileQueueList listBoxFiles;
         private ProgressBar progressBar;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
         private ComboBox cmbPasses;

@@ -111,7 +111,7 @@
             label4.Name = "label4";
             label4.Size = new Size(396, 100);
             label4.TabIndex = 16;
-            label4.Text = "Securely overwrite files with random data, \r\nthen delete them from disk.\r\n\r\nPass presets change overwrite count only.\r\nAll passes use cryptographic random bytes.";
+            label4.Text = "Overwrite files with the selected pass pattern,\r\nthen delete them from disk.\r\n\r\nSome presets use fixed byte patterns.\r\nGutmann patterns target old magnetic disks.";
             label4.MouseDown += Form1_MouseDown;
             // 
             // label5

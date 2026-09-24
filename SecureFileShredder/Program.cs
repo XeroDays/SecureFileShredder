@@ -40,8 +40,8 @@ namespace SecureFileShredder
                 string filePaths = string.Join("|", args); 
                 COPYDATASTRUCT cds = new COPYDATASTRUCT();
                 cds.dwData = IntPtr.Zero;
-                cds.cbData = filePaths.Length + 1;
-                cds.lpData = Marshal.StringToHGlobalAnsi(filePaths); 
+                cds.cbData = (filePaths.Length + 1) * 2;
+                cds.lpData = Marshal.StringToHGlobalUni(filePaths); 
                 SendMessage(hWnd, WM_COPYDATA, IntPtr.Zero, ref cds); 
                 Marshal.FreeHGlobal(cds.lpData);
             }
@@ -51,7 +51,7 @@ namespace SecureFileShredder
         public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, ref COPYDATASTRUCT lParam);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        public static extern IntPtr FindWindow(string? lpClassName, string lpWindowName);
     }
      
     [StructLayout(LayoutKind.Sequential)]

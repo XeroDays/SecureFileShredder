@@ -1,4 +1,13 @@
-﻿Version 1.7 (Released)
+﻿Version 1.8 (Released)
+ - Add, remove, and clear queue items; file count and size summary
+ - Live pass status, chunk progress, speed, and ETA
+ - Drag highlight, button pulse, startup fade, and row fade
+ - Resizable window, saved settings, profiles, dark theme, and shred history
+ - Real pass patterns, stream wipe, verify, rename, and timestamp randomization
+ - Parallel shredding and a separate free-space wipe
+ - Unicode second-instance paths; close is blocked while shredding
+
+Version 1.7 (Released)
  - Minimize to tray while shredding with live % on tray icon
  - Close button hidden during shred; app stays open until user closes
  - Start button becomes Stop Shredding to cancel the job

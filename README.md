@@ -1,6 +1,6 @@
 # Secure File Shredder
 
-**Version 1.7** — A Windows desktop application for securely deleting sensitive files and folders beyond recovery.
+**Version 1.8** — A Windows desktop application for securely deleting sensitive files and folders beyond recovery.
 
 ## Overview
 
@@ -16,28 +16,30 @@ The tool supports multiple overwrite passes and configurable buffer sizes. It is
 
 ## Features
 
-- **Drag-and-drop**: Add files or folders to the shred queue from the main window.
+- **Add, remove, and clear**: Use Add files, Add folder, Remove, Clear, drag-and-drop, or the Delete key. The queue shows a file count and total size.
 - **Windows context menu**: After installation, right-click any file or folder and choose **Shred Securely** to open the app with that item queued (uses the application logo as the menu icon).
 - **Folder shredding**: Dropped or selected folders are expanded recursively; contained files are shredded and empty root folders are removed afterward.
-- **Configurable overwrite passes**: Choose from presets (1, 3, 7, 12, 35, or 55 passes) labeled after common standards (e.g. DoD, Gutmann); each pass uses cryptographically random data.
+- **Pass patterns**: Presets run 1, 3, 7, 12, 35, or 55 passes. Fixed patterns are used where the preset defines them. Gutmann’s fixed passes target old magnetic disks. The 12-pass preset keeps the older NSA label and is not a published NSA procedure.
 - **Configurable buffer size**: Tune read/write chunk size from 1 KB up to 512 KB (default 4 KB) for performance tuning on large files.
-- **Progress monitoring**: Progress bar with background processing so the UI stays responsive.
+- **Progress monitoring**: Chunk-level progress with percent, speed, and estimated time remaining. The active file is highlighted, then fades out when it finishes.
 - **Stop shredding**: The start button becomes **Stop Shredding** while a job runs; use it to cancel the operation.
 - **Minimize to tray**: While shredding, minimize to the system tray; the tray icon shows live progress percentage.
 - **Close after finish**: The close button is hidden during shredding; when the job ends, confirm the result message, then close the app when you are ready.
 - **Locked files**: Files that cannot be shredded (for example in use) are skipped; the rest of the batch continues and failed items stay in the queue.
 - **Single-instance behavior**: Opening the app again (e.g. from the context menu while it is already running) sends new paths to the existing window instead of starting a second copy.
+- **Settings and history**: Save profiles, a dark theme, and the last window size. A history view lists shredded paths on this PC.
+- **Free-space wipe**: A separate screen fills free space down to a 256 MB reserve, overwrites that file, and deletes it. It asks twice before starting.
 - **About dialog**: Product information and version from the info button on the main window.
 - **Windows installer**: Inno Setup package for install, uninstall, and shell integration; release builds are published via GitHub Actions when a release is published.
 
 ## How It Works
 
 1. **Queue**: Files (and folder contents) are collected into a shred queue via drag-and-drop, the context menu, or launching the app with paths.
-2. **Overwrite**: Each file is overwritten multiple times with random bytes from a cryptographically secure generator; you choose how many passes to apply.
+2. **Overwrite**: Each file is overwritten using the selected pass pattern. Random passes use a cryptographic generator. Fixed passes write the preset’s byte pattern.
 3. **Delete**: After overwriting, successfully shredded files are deleted from disk; dragged root folders are removed when applicable.
 4. **Feedback**: Progress is shown during the operation; success, cancel, and error states are reported in dialogs.
 
-Pass preset names (DoD, NSA, Gutmann, etc.) indicate how many overwrite rounds run; the same secure random-byte method is used for every pass.
+Pass preset names select both the pass count and the byte pattern. Gutmann’s fixed patterns target old magnetic disks. On SSDs, wear leveling can leave old data on retired flash cells.
 
 ## Getting Started
 
@@ -66,35 +68,34 @@ Pass preset names (DoD, NSA, Gutmann, etc.) indicate how many overwrite rounds r
 |------|------|
 | `Mainmenu` | Main UI, file queue, shred settings, background worker, tray, deletion |
 | `About` | About / version dialog |
-| `Controllers/ShredderController` | Secure multi-pass file overwrite |
+| `Controllers/ShredderController` | Secure multi-pass file overwrite, stream wipe, and verify |
+| `Services/ShredSession` | Parallel shred run, cancel, and progress |
+| `SettingsForm`, `HistoryForm`, `FreeSpaceForm` | Profiles, audit log, free-space wipe |
 | `Assets/TaskbarIcon` | Tray progress badge icons (`1%`–`100%`) |
 | `Program` | Application entry, single-instance mutex, inter-process file handoff |
 | `SetupInstaller.iss` | Windows installer, context menu registry, bundled `Logo.ico` |
 | `.github/workflows/build.yml` | Release build, zip, Inno Setup, upload to GitHub Releases |
 | `ChangeLog.txt` | Release history notes |
 
-## Release Notes (1.7)
+## Release Notes (1.8)
 
 Current release highlights:
 
-- Minimize to tray while shredding with live % on tray icon
-- Close button hidden during shred; app stays open until user closes
-- Start button becomes **Stop Shredding** to cancel the job
-- Hint label hides while running and shows again when done
-
-Earlier versions introduced the installer, GitHub release workflow, context menu, folder deletion, shredder controller, pass/buffer presets, and UI refinements — see `SecureFileShredder/ChangeLog.txt` for full history.
+- Queue add, remove, and clear, with a live file count and size
+- Chunk progress, speed, ETA, row highlight, and a completion summary
+- Saved profiles, dark theme, shred history, and a resizable window
+- Pass patterns, alternate-stream wipe, verify, rename, and timestamp randomization
+- Parallel shredding and a separate free-space wipe
 
 ## Future Enhancements
 
-Possible improvements:
+Possible later work:
 
-1. Metadata wiping (timestamps, alternate streams)
-2. Multi-threaded shredding for faster batch jobs
-3. Optional password protection before shredding
-4. Shredding profiles to save favorite pass/buffer settings
-5. File-type filters (e.g. only documents)
-6. Detailed audit log of shredded items
-7. Assembly / release / installer version synced automatically from Git tags
+1. A published standard for the 12-pass preset if one is adopted
+2. Per-drive free-space schedules
+3. Optional password confirmation before shredding
+
+Earlier versions introduced the installer, GitHub release workflow, context menu, folder deletion, shredder controller, pass/buffer presets, and UI refinements — see `SecureFileShredder/ChangeLog.txt` for full history.
 
 ## Disclaimer
 

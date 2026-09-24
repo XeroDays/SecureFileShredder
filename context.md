@@ -9,7 +9,7 @@
 | Field | Detail |
 |-------|--------|
 | Purpose | Windows desktop app to securely overwrite and delete files/folders beyond standard delete |
-| Architecture | Monolithic WinForms; partial controller extraction (`Controllers/`) |
+| Architecture | WinForms UI; shred work in `ShredSession` and `ShredderController` |
 | Framework | .NET 8 (`net8.0-windows`), Windows Forms |
 | Language | C# |
 | Database | None |
@@ -24,16 +24,19 @@
 
 - **WinForms partial class**: UI in `*.Designer.cs` + `*.resx`; behavior in matching `*.cs`
 - **Primary form**: [Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — shredding UI; **secondary form**: [About.cs](SecureFileShredder/About.cs) — about/branding dialog
-- **Shredding algorithm** in [ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs); **queue, config, progress, deletion** stay in `Mainmenu`
-- **Static shared state**: `PASSES`, `Buffer_Size` on `Mainmenu`, set at shred start, consumed by `ShredderController`
-- **Overwrite then delete**: `BackgroundWorker` overwrites per file (failures skipped, batch continues); `File.Delete` / `Directory.Delete` in `RunWorkerCompleted` only for successes; failed paths stay in queue
+- **Shredding algorithm** in [ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs); orchestration in [ShredSession.cs](SecureFileShredder/Services/ShredSession.cs); queue UI in `Mainmenu`
+- **Job options** are passed in (`ShredJobOptions`). There is no static pass or buffer state
+- **Overwrite then delete**: up to 4 files in parallel; failures stay queued; successes are renamed, timestamp-randomized, then deleted. Empty dragged roots are removed afterward
 - **Single instance**: Mutex `"SecureShredder"` in [Program.cs](SecureFileShredder/Program.cs); second instance uses `WM_COPYDATA` IPC
 - **Borderless chrome**: `Mainmenu` and `About` use `FormBorderStyle.None`; close via `PictureBox` + `icons8_close_50`; minimize via `btnMinimize` label on `Mainmenu`
-- **Minimize-to-tray while shredding**: when `BackgroundWorker.IsBusy`, minimize hides to `NotifyIcon` (keep shredding); `btnClose` and `label2` hidden until shred completes/stops; start button text becomes **Stop Shredding** (cancels worker); idle close exits; idle minimize uses `WindowState.Minimized`; tray tooltip shows `Shredding: XX%`; tray icon swaps to `Assets/TaskbarIcon/pct_XXX.ico` badge (1–100); after completion MessageBox app stays open until user clicks Close
+- **Minimize-to-tray while shredding**: while a shred session is running, minimize hides to `NotifyIcon`; `btnClose` is hidden until the session ends; start button text becomes **Stop Shredding**; idle close exits; idle minimize uses `WindowState.Minimized`; tray tooltip shows `Shredding: XX%`; tray icon swaps to `Assets/TaskbarIcon/pct_XXX.ico`; a full success shows an on-form summary, or a tray balloon if minimized
 - **Branding assets**: `Logo.ico` (application icon, shell context-menu icon, installer bundle), `LogoPng` (header/about logo) via [Properties/Resources.resx](SecureFileShredder/Properties/Resources.resx)
 - **Shell context menu**: label, icon, and launch command configured only in [SetupInstaller.iss](SetupInstaller.iss) `[Registry]` — not in C#
 - **No DI, repository layer, service interfaces, or automated tests**
-- **Pass presets are labels only**: DoD/Gutmann/etc. change pass count only; all passes use `RNGCryptoServiceProvider` random bytes
+- **Pass presets carry patterns** in [PresetCatalog.cs](SecureFileShredder/Models/PresetCatalog.cs). Gutmann fixed passes target old magnetic disks. The 12-pass label is historical, not a published NSA procedure. `RandomNumberGenerator` supplies random passes
+- **Settings and history** live under `%AppData%\SecureFileShredder` (`settings.json`, `history.jsonl`)
+- **Close while busy** cancels `FormClosing` so Alt+F4 does not exit mid-shred
+- **IPC strings are Unicode** (`StringToHGlobalUni` / `PtrToStringUni`)
 
 ---
 
@@ -124,8 +127,8 @@ Workflow: User selects presets → confirm dialog → set `PASSES`, `Buffer_Size
 Purpose: Multi-pass cryptographic random overwrite of file content.
 
 Entry Points:
-- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — `BackgroundWorker_DoWork`, `ShredFile`
-- [SecureFileShredder/Controllers/ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs) — `ShreddFile`
+- [SecureFileShredder/Services/ShredSession.cs](SecureFileShredder/Services/ShredSession.cs) — `RunAsync`
+- [SecureFileShredder/Controllers/ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs) — `ShredFile`
 
 Primary Files:
 - [SecureFileShredder/Controllers/ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs)
@@ -133,7 +136,7 @@ Primary Files:
 Related Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
 
-Dependencies: `RNGCryptoServiceProvider`, `BackgroundWorker` progress reporting
+Dependencies: `RandomNumberGenerator`, `ShredSession` progress callbacks
 
 Workflow: Per file → try overwrite → on success track + remove from listbox → on failure (e.g. in use) track and continue → N passes → random bytes in buffer chunks → `ReportProgress` per pass
 
@@ -144,7 +147,7 @@ Workflow: Per file → try overwrite → on success track + remove from listbox 
 Purpose: Remove successfully overwritten files and empty dragged root folders; keep failed paths queued.
 
 Entry Points:
-- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — `BackgroundWorker_RunWorkerCompleted`, `FinalizeSucceededFiles`
+- [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) — `Finish`, `RemoveEmptyRoots`
 
 Primary Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -279,7 +282,7 @@ Files:
 
 Trigger: User clicks Start after queue populated.
 
-Flow: Confirm dialog → parse passes/buffer from combos → validate queue → button text `Stop Shredding`; hide `label2` + `btnClose` → `BackgroundWorker.RunWorkerAsync` → per file try `ShredderController.ShreddFile` → on success remove from listbox / on failure continue → progress updates → `ShredBatchResult` via `e.Result`
+Flow: Confirm dialog → read `ShredPreset` and `BufferOption` from the combos → `ShredSession.RunAsync` with up to 4 workers → per file `ShredderController.ShredFile` → success fades the row / failure stays queued
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -302,7 +305,7 @@ Files:
 
 ### Complete Shredding
 
-Trigger: BackgroundWorker finishes without cancel/unexpected worker error.
+Trigger: `ShredSession.RunAsync` finishes without cancel.
 
 Flow: `RunWorkerCompleted` → restore from tray if hidden → `FinalizeSucceededFiles` → success or partial-failure MessageBox → `RestoreIdleShredUi` → stay open until user clicks Close
 
@@ -313,7 +316,7 @@ Files:
 
 ### Minimize or Close During Shred
 
-Trigger: User clicks minimize or close while `BackgroundWorker.IsBusy`.
+Trigger: User clicks minimize or close while a shred session is running.
 
 Flow: Shred start hides `btnClose` + `label2` → busy minimize → `MinimizeToTray` + badge/% tooltip → double-click/Restore returns window. Idle minimize → `WindowState.Minimized`; after complete Close → `Application.Exit`.
 
@@ -327,7 +330,7 @@ Files:
 
 Trigger: User clicks Close when shredding is not running.
 
-Flow: `btnClose_Click` → `Application.Exit` (close is hidden while `BackgroundWorker.IsBusy`)
+Flow: `btnClose_Click` → `Application.Exit` when no shred is running. `FormClosing` cancels the close while a session is active.
 
 Files:
 - [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs)
@@ -369,7 +372,13 @@ Files:
 | Responsibility | File |
 |----------------|------|
 | Application entry, mutex, IPC send | [SecureFileShredder/Program.cs](SecureFileShredder/Program.cs) |
-| UI logic, queue, worker, deletion | [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) |
+| UI logic, queue, shred session, deletion | [SecureFileShredder/Mainmenu.cs](SecureFileShredder/Mainmenu.cs) |
+| Queue model | [SecureFileShredder/Models/ShredQueue.cs](SecureFileShredder/Models/ShredQueue.cs) |
+| Presets, options, history records | [SecureFileShredder/Models/](SecureFileShredder/Models/) |
+| Settings, history, session, free-space wipe, rename | [SecureFileShredder/Services/](SecureFileShredder/Services/) |
+| Queue list and progress bar | [SecureFileShredder/Controls/](SecureFileShredder/Controls/) |
+| Theme palettes | [SecureFileShredder/Theming/ThemePalette.cs](SecureFileShredder/Theming/ThemePalette.cs) |
+| Settings, history, free-space forms | [SettingsForm.cs](SecureFileShredder/SettingsForm.cs), [HistoryForm.cs](SecureFileShredder/HistoryForm.cs), [FreeSpaceForm.cs](SecureFileShredder/FreeSpaceForm.cs) |
 | Main form layout (619×464, logo header, info/minimize/close) | [SecureFileShredder/Mainmenu.Designer.cs](SecureFileShredder/Mainmenu.Designer.cs) |
 | Main form embedded icon | [SecureFileShredder/Mainmenu.resx](SecureFileShredder/Mainmenu.resx) |
 | About dialog logic | [SecureFileShredder/About.cs](SecureFileShredder/About.cs) |
@@ -405,9 +414,10 @@ User input (drag / CLI / context menu / IPC)
   → Mainmenu.updateListWithFiles
   → listofPaths + listOfDirectories
   → btnStartDeleting (sets PASSES, Buffer_Size)
-  → BackgroundWorker.DoWork
-  → per file: ShredderController.ShreddFile (skip/continue on failure)
-  → BackgroundWorker.RunWorkerCompleted
+  → ShredSession.RunAsync
+  → per file: ShredderController.ShredFile (skip/continue on failure)
+  → FileFinalizer for successes
+  → Mainmenu.Finish
   → File.Delete successes + Directory.Delete empty roots; failed paths remain queued
 ```
 
@@ -446,15 +456,15 @@ Entry Points: `FindWindow`, `SendMessage`, `ReleaseCapture`, `WndProc`
 
 ---
 
-### RNGCryptoServiceProvider
+### RandomNumberGenerator
 
-Purpose: Cryptographically random bytes for file overwrite.
+Purpose: Cryptographically random bytes for random overwrite passes.
 
 Files: [SecureFileShredder/Controllers/ShredderController.cs](SecureFileShredder/Controllers/ShredderController.cs)
 
 Authentication: N/A
 
-Entry Points: `ShredderController.ShreddFile`
+Entry Points: `ShredderController.ShredFile`
 
 ---
 
@@ -580,12 +590,12 @@ May impact: Target framework, output type, icon, content copy rules
 - **Tray**: `NotifyIcon` visible only while minimized during shred; tooltip percentage from `progressBar` value/max; live badge icons in `Assets/TaskbarIcon/pct_001.ico`–`pct_100.ico` (copied to output)
 - **Bitmap resources**: `LogoPng`, `icons8_close_50`, `icons8_information_100` (plus legacy `icons8_close_48`, `information`)
 - **Application icon**: `Logo.ico` in `.csproj` (`ApplicationIcon`, `CopyToOutputDirectory`); same file used for Explorer context-menu icon via installer `Icon` registry value
-- **Installer version** (`MyAppVersion` in [SetupInstaller.iss](SetupInstaller.iss)): 1.5 — not synced from GitHub release tag or `.csproj` assembly version
-- **About UI version label**: `Version 1.5` in [About.Designer.cs](SecureFileShredder/About.Designer.cs) (display only)
+- **Installer version** (`MyAppVersion` in [SetupInstaller.iss](SetupInstaller.iss)): 1.8 — keep it aligned with `About.AppVersion`
+- **About UI version label**: `Version 1.8` from `About.AppVersion`
 - Combo items encode numeric values; parsed via `Split` on shred start
 - Progress max during overwrite: `fileCount * passes`
 - Progress during deletion: `listofPaths.Count` (separate phase)
-- Pass options: 1, 3, 7, 12, 35, 55 (label names only; same RNG algorithm)
+- Pass options: 1, 3, 7, 12, 35, 55. Patterns live on each `ShredPreset`. Random passes use `RandomNumberGenerator`
 - Buffer options: 1 KB–512 KB (default 4 KB)
 - MIT license; installer publisher Softasium ([SetupInstaller.iss](SetupInstaller.iss))
 - No NuGet dependencies; BCL only
