@@ -126,13 +126,6 @@ namespace SecureFileShredder
 
         private void WireUi()
         {
-            btnAddFiles.Click += (_, _) => BrowseFiles();
-            btnAddFolder.Click += (_, _) => BrowseFolder();
-            btnRemove.Click += (_, _) => RemoveSelected();
-            btnClear.Click += (_, _) => ClearQueue();
-            btnSettings.Click += (_, _) => OpenSettings();
-            btnHistory.Click += (_, _) => OpenHistory();
-            btnFreeSpace.Click += (_, _) => OpenFreeSpace();
             DragLeave += (_, _) => DragLeaveClient();
             listBoxFiles.DragLeave += (_, _) => DragLeaveClient();
         }
@@ -881,6 +874,41 @@ namespace SecureFileShredder
             using var about = new About();
             about.ApplyTheme(theme);
             about.ShowDialog(this);
+        }
+
+        private void btnHistory_Click(object sender, EventArgs e)
+        {
+            OpenHistory();
+        }
+
+        private void btnSettings_Click(object sender, EventArgs e)
+        {
+            OpenSettings();
+        }
+
+        private void btnFreeSpace_Click(object sender, EventArgs e)
+        {
+            OpenFreeSpace();
+        }
+
+        private void btnAddFiles_Click(object sender, EventArgs e)
+        {
+            BrowseFiles();
+        }
+
+        private void btnAddFolder_Click(object sender, EventArgs e)
+        {
+            BrowseFolder();
+        }
+
+        private void btnRemove_Click(object sender, EventArgs e)
+        {
+            RemoveSelected();
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            ClearQueue();
         }
     }
 }

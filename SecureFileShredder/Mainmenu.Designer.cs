@@ -218,6 +218,7 @@
             btnAddFiles.TabIndex = 13;
             btnAddFiles.Text = "Add files";
             btnAddFiles.UseVisualStyleBackColor = false;
+            btnAddFiles.Click += btnAddFiles_Click;
             // 
             // btnAddFolder
             // 
@@ -230,6 +231,7 @@
             btnAddFolder.TabIndex = 14;
             btnAddFolder.Text = "Add folder";
             btnAddFolder.UseVisualStyleBackColor = false;
+            btnAddFolder.Click += btnAddFolder_Click;
             // 
             // btnRemove
             // 
@@ -242,6 +244,7 @@
             btnRemove.TabIndex = 15;
             btnRemove.Text = "Remove";
             btnRemove.UseVisualStyleBackColor = false;
+            btnRemove.Click += btnRemove_Click;
             // 
             // btnClear
             // 
@@ -254,6 +257,7 @@
             btnClear.TabIndex = 16;
             btnClear.Text = "Clear";
             btnClear.UseVisualStyleBackColor = false;
+            btnClear.Click += btnClear_Click;
             // 
             // btnSettings
             // 
@@ -267,6 +271,7 @@
             btnSettings.TabIndex = 17;
             btnSettings.Text = "Settings";
             btnSettings.UseVisualStyleBackColor = false;
+            btnSettings.Click += btnSettings_Click;
             // 
             // btnHistory
             // 
@@ -280,6 +285,7 @@
             btnHistory.TabIndex = 18;
             btnHistory.Text = "History";
             btnHistory.UseVisualStyleBackColor = false;
+            btnHistory.Click += btnHistory_Click;
             // 
             // btnFreeSpace
             // 
@@ -293,6 +299,7 @@
             btnFreeSpace.TabIndex = 19;
             btnFreeSpace.Text = "Free space";
             btnFreeSpace.UseVisualStyleBackColor = false;
+            btnFreeSpace.Click += btnFreeSpace_Click;
             // 
             // lblSummary
             // 
@@ -306,7 +313,7 @@
             // 
             // lblStatus
             // 
-            lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            lblStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             lblStatus.ForeColor = Color.DimGray;
             lblStatus.Location = new Point(488, 452);
             lblStatus.Name = "lblStatus";
@@ -327,17 +334,19 @@
             // lblResult
             // 
             lblResult.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lblResult.AutoSize = true;
             lblResult.ForeColor = Color.DimGray;
-            lblResult.Location = new Point(12, 594);
+            lblResult.Location = new Point(12, 570);
             lblResult.Name = "lblResult";
-            lblResult.Size = new Size(876, 40);
+            lblResult.Size = new Size(182, 20);
             lblResult.TabIndex = 23;
+            lblResult.Text = "Result TExt will come here";
             // 
             // shredBar
             // 
             shredBar.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             shredBar.BarColor = Color.Maroon;
-            shredBar.Location = new Point(12, 554);
+            shredBar.Location = new Point(8, 552);
             shredBar.Maximum = 10000;
             shredBar.Name = "shredBar";
             shredBar.Size = new Size(876, 14);
@@ -348,8 +357,7 @@
             // Mainmenu
             // 
             AllowDrop = true;
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleMode = AutoScaleMode.None;
             BackColor = Color.FromArgb(224, 224, 224);
             ClientSize = new Size(900, 640);
             Controls.Add(shredBar);
